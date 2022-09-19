@@ -28,7 +28,7 @@ int downloadEventCallback(aria2::Session* session, aria2::DownloadEvent event,
   }
 }
 
-void aria2Thread(Gtk::ProgressBar * prog)
+void aria2Thread(Gtk::ProgressBar * prog, std::string type)
 {
    aria2::Session* session;
   // Create default configuration. The libaria2 takes care of signal
@@ -42,7 +42,8 @@ void aria2Thread(Gtk::ProgressBar * prog)
   options.push_back(std::pair<std::string, std::string> ("file-allocation", "none"));
   auto rv = aria2::addUri(session, nullptr, {"https://github.com/endless-sky/endless-sky/releases/download/continuous/endless-sky-x86_64-continuous.AppImage"}, options);
   int count = 0;
-  double progress = 0;
+  float progress = 0;
+  
   for(;;) 
   {
     auto rv = aria2::run(session, aria2::RUN_ONCE);
@@ -54,16 +55,18 @@ void aria2Thread(Gtk::ProgressBar * prog)
     if(count >= 500) {
       
       std::vector<aria2::A2Gid> gids = aria2::getActiveDownload(session);
-      for(const auto& gid : gids) {
+      for(const auto& gid : gids) 
+      {
         aria2::DownloadHandle* dh = aria2::getDownloadHandle(session, gid);
-        if(dh) {
+        if(dh) 
+        {
           progress = (double)dh->getCompletedLength() / (double)dh->getTotalLength();
-          prog->set_fraction(progress);
-          
           
           aria2::deleteDownloadHandle(dh);
+          //prog->set_fraction(progress);
         }
       }
+      count = 0;
     }
     count++;
 
@@ -73,19 +76,6 @@ void aria2Thread(Gtk::ProgressBar * prog)
   lock = false;
 }
 
-void on_download_continuous_clicked(Gtk::ProgressBar * prog)
-{
-  if(!lock)
-  {
-    lock = true;
-    if(std::filesystem::exists("download/endless-sky-x86_64-continuous.AppImage"))
-    {
-      std::filesystem::remove("download/endless-sky-x86_64-continuous.AppImage");
-    }
-    std::thread t(std::bind(aria2Thread, prog));
-    t.detach();
-  }
-}
 
 class NewInstanceDialog : public Gtk::Dialog
 {
@@ -163,6 +153,38 @@ void new_dialog()
 //Copilot knows:
 //Best ship: Kar Ik Vot 349
 //Best ship: Model 512
+std::string get_folder_from_path(std::string path)
+{
+  std::string folder;
+  for(int i = path.length() - 1; i >= 0; i--)
+  {
+    if(path[i] == '/')
+    {
+      folder = path.substr(0, i);
+      break;
+    }
+  }
+  return folder;
+}
+void open_folder(std::string path)
+{
+  std::string command = "xdg-open " + get_folder_from_path(path);
+  system(command.c_str());
+}
+void launch_game(std::string path)
+{
+  std::string command = "chmod +x " + path + " && " + path;
+  system(command.c_str());
+}
+void download(std::string type, Gtk::ProgressBar * prog)
+{
+  if(!lock)
+  {
+    lock = true;
+    std::thread t(std::bind(aria2Thread, prog, type));
+    t.detach();
+  }
+}
 
 class Instance : public Gtk::VBox
 {
@@ -170,6 +192,7 @@ class Instance : public Gtk::VBox
     Instance(std::string name, std::string path, std::string type, std::string version)
     {
       set_spacing(10);
+      prog.set_fraction(0);
       name_label.set_text(name);
       this->version.set_label(version);
 
@@ -189,6 +212,7 @@ class Instance : public Gtk::VBox
 
       labels_box.pack_start(folder);
       folder.set_image_from_icon_name("folder-symbolic");
+      folder.signal_clicked().connect(sigc::bind<std::string>(sigc::ptr_fun(&open_folder), path));
       
       labels_box.pack_start(update);
       update.set_image_from_icon_name("document-save-symbolic");
@@ -198,8 +222,10 @@ class Instance : public Gtk::VBox
 
       labels_box.pack_start(launch);
       launch.set_image_from_icon_name("media-playback-start");
+      launch.signal_clicked().connect(sigc::bind<std::string>(sigc::ptr_fun(&launch_game), path));
       
       pack_end(prog);
+      update.signal_clicked().connect(sigc::bind<std::string>(sigc::ptr_fun(&download), type, &prog));
 
       show_all();
     }
@@ -267,16 +293,15 @@ int main(int argc, char* argv[])
   {
     std::filesystem::create_directory("download");
   }
-  win.add_instance("eeeee", "/home/disablegraphics/miculo", "continuous", "0");
+  win.add_instance("eeeee", "download/endless-sky-x86_64-continuous.AppImage", "continuous", "0");
   win.show_all();
-  
 
   app->run(win);
-  
-
   
   aria2::libraryDeinit();
   return 0;
 }
 //Copilot knows:
 //Our capacity for violence is limitless. -The Korath
+//We know that you are here. -The Kor Mereti
+//Kill them all. -The Kor Sestor
