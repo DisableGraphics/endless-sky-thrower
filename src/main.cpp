@@ -5,11 +5,13 @@
 #include "gtkmm/label.h"
 #include "gtkmm/progressbar.h"
 #include "sigc++/functors/ptr_fun.h"
+#include <cstddef>
 #include <gtkmm.h>
 #include <aria2/aria2.h>
 #include <iostream>
 #include <thread>
 #include <filesystem>
+#include <unistd.h>
 
 bool lock;
 
@@ -166,15 +168,66 @@ std::string get_folder_from_path(std::string path)
   }
   return folder;
 }
+
+std::string getOs()
+{
+  std::string os;
+  #ifdef _WIN32
+    os = "Windows";
+  #elif _WIN64
+    os = "Windows";
+  #elif __APPLE__ || __MACH__
+    os = "MacOS";
+  #elif __linux__
+    os = "Linux";
+  #else
+    os = "Other";
+  #endif
+  return os;
+}
+
 void open_folder(std::string path)
 {
-  std::string command = "xdg-open " + get_folder_from_path(path);
-  system(command.c_str());
+  if(getOs() == "Linux")
+  {
+    std::string command = "xdg-open " + get_folder_from_path(path);
+    system(command.c_str());
+  }
+  else if(getOs() == "Windows")
+  {
+    std::string command = "explorer " + get_folder_from_path(path);
+    system(command.c_str());
+  }
+  else if(getOs() == "MacOS")
+  {
+    std::string command = "open " + get_folder_from_path(path);
+    system(command.c_str());
+  }
+  
 }
 void launch_game(std::string path)
 {
-  std::string command = "chmod +x " + path + " && " + path;
-  system(command.c_str());
+  if(getOs() == "Linux")
+  {
+    std::string command = "chmod +x " + path;
+    system(command.c_str());
+    
+    char *const  args[] = {(char *)path.c_str(), NULL};
+    pid_t pid = fork();
+    switch(pid) {
+      case 0: 
+          execv( path.c_str(), args); 
+          break;
+      case -1: 
+          std::cout << "error\n";
+    }
+  }
+  if(getOs() == "Windows")
+  {
+    std::string command = "start " + path;
+    system(command.c_str());
+  }
+  
 }
 void download(std::string type, Gtk::ProgressBar * prog)
 {
