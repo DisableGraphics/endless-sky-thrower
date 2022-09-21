@@ -43,8 +43,7 @@ void aria2Thread(Gtk::ProgressBar * prog, std::string type)
 
   options.push_back(std::pair<std::string, std::string> ("file-allocation", "none"));
   auto rv = aria2::addUri(session, nullptr, {"https://github.com/endless-sky/endless-sky/releases/download/continuous/endless-sky-x86_64-continuous.AppImage"}, options);
-  int count = 0;
-  float progress = 0;
+  double progress = 0;
   
   for(;;) 
   {
@@ -54,7 +53,7 @@ void aria2Thread(Gtk::ProgressBar * prog, std::string type)
       break;
     }
     
-    if(count >= 500) {
+    
       
       std::vector<aria2::A2Gid> gids = aria2::getActiveDownload(session);
       for(const auto& gid : gids) 
@@ -63,18 +62,23 @@ void aria2Thread(Gtk::ProgressBar * prog, std::string type)
         if(dh) 
         {
           progress = (double)dh->getCompletedLength() / (double)dh->getTotalLength();
+          std::cout << progress << std::endl;
+          if(dh->getTotalLength() == 0) {
+            progress = 0;
+          }
           
           aria2::deleteDownloadHandle(dh);
-          //prog->set_fraction(progress);
+          prog->set_text(std::to_string(progress * 100) + "%");
+          prog->set_fraction(progress);
         }
       }
-      count = 0;
-    }
-    count++;
+      
 
   }
   std::filesystem::rename("endless-sky-x86_64-continuous.AppImage", "download/endless-sky-x86_64-continuous.AppImage");
   aria2::sessionFinal(session);
+  prog->set_text("Download Complete");
+  prog->set_fraction(0);
   lock = false;
 }
 
@@ -242,10 +246,9 @@ void download(std::string type, Gtk::ProgressBar * prog)
 class Instance : public Gtk::VBox
 {
   public:
-    Instance(std::string name, std::string path, std::string type, std::string version)
+    Instance(std::string name, std::string path, std::string type, std::string version, Gtk::ProgressBar * global_prog)
     {
       set_spacing(10);
-      prog.set_fraction(0);
       name_label.set_text(name);
       this->version.set_label(version);
 
@@ -268,7 +271,7 @@ class Instance : public Gtk::VBox
       folder.signal_clicked().connect(sigc::bind<std::string>(sigc::ptr_fun(&open_folder), path));
       
       labels_box.pack_start(update);
-      update.set_image_from_icon_name("document-save-symbolic");
+      update.set_image_from_icon_name("go-down");
 
       labels_box.pack_start(delete_button);
       delete_button.set_image_from_icon_name("user-trash-symbolic");
@@ -277,11 +280,10 @@ class Instance : public Gtk::VBox
       launch.set_image_from_icon_name("media-playback-start");
       launch.signal_clicked().connect(sigc::bind<std::string>(sigc::ptr_fun(&launch_game), path));
       
-      pack_end(prog);
-      update.signal_clicked().connect(sigc::bind<std::string>(sigc::ptr_fun(&download), type, &prog));
-
+      update.signal_clicked().connect(sigc::bind<std::string>(sigc::ptr_fun(&download), type, global_prog));
       show_all();
     }
+    
   private:
     Gtk::Label name_label;
     Gtk::Label version;
@@ -289,7 +291,6 @@ class Instance : public Gtk::VBox
     Gtk::Button delete_button;
     Gtk::Button folder;
     Gtk::Button update;
-    Gtk::ProgressBar prog;
     Gtk::HBox labels_box;
 };
 
@@ -303,7 +304,7 @@ class MyWindow : public Gtk::Window
     }
     void add_instance(std::string name, std::string path, std::string type, std::string version)
     {
-      instances.push_back(Instance(name, path, type, version));
+      instances.push_back(Instance(name, path, type, version, &progress));
       instances[instances.size() - 1].show_all();
       m_vbox.pack_start(instances[instances.size() - 1]);
     }
@@ -312,6 +313,7 @@ class MyWindow : public Gtk::Window
     std::vector<Instance> instances;
     aria2::Session * deltaSession;
     Gtk::Button m_new_instance_button;
+    Gtk::ProgressBar progress;
     Gtk::VBox m_vbox;
     Gtk::HeaderBar titlebar;
 };
@@ -323,6 +325,7 @@ MyWindow::MyWindow()
   m_vbox.set_border_width(10);
   m_vbox.set_spacing(10);
   m_vbox.set_valign(Gtk::ALIGN_START);
+  m_vbox.pack_start(progress);
 
   m_new_instance_button.signal_clicked().connect(sigc::ptr_fun(new_dialog));
 
