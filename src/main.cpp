@@ -7,14 +7,16 @@
 #include "sigc++/functors/ptr_fun.h"
 #include <cstddef>
 #include <gtkmm.h>
+#ifdef __linux__
 #include <aria2/aria2.h>
+#endif
 #include <iostream>
 #include <thread>
 #include <filesystem>
 #include <unistd.h>
 
 bool lock;
-
+#ifdef __linux__
 int downloadEventCallback(aria2::Session* session, aria2::DownloadEvent event,
                           unsigned long gid, void* userData)
 {
@@ -29,15 +31,18 @@ int downloadEventCallback(aria2::Session* session, aria2::DownloadEvent event,
     return 0;
   }
 }
+#endif
 
 void aria2Thread(Gtk::ProgressBar * prog, std::string type)
 {
-   aria2::Session* session;
+  #ifdef __linux__
+  aria2::Session* session;
   // Create default configuration. The libaria2 takes care of signal
   // handling.
   aria2::SessionConfig config;
   // Add event callback
-  config.downloadEventCallback = &downloadEventCallback;
+  config.downloadEventCallback = downloadEventCallback;
+  
   session = aria2::sessionNew(aria2::KeyVals(), config);
   aria2::KeyVals options;
 
@@ -64,6 +69,7 @@ void aria2Thread(Gtk::ProgressBar * prog, std::string type)
         {
           progress = (double)dh->getCompletedLength() / (double)dh->getTotalLength();
           
+          
           aria2::deleteDownloadHandle(dh);
           //prog->set_fraction(progress);
         }
@@ -76,6 +82,13 @@ void aria2Thread(Gtk::ProgressBar * prog, std::string type)
   std::filesystem::rename("endless-sky-x86_64-continuous.AppImage", "download/endless-sky-x86_64-continuous.AppImage");
   aria2::sessionFinal(session);
   lock = false;
+
+  #elif _WIN32
+  std::string url = "https://github.com/endless-sky/endless-sky/releases/download/continuous/endless-sky-win64-continuous.zip";
+  system(("wget " + url + " -o download/endless-sky-win64-continuous.zip").c_str());
+  lock = false;
+
+  #endif
 }
 
 
@@ -188,45 +201,67 @@ std::string getOs()
 
 void open_folder(std::string path)
 {
-  if(getOs() == "Linux")
-  {
+  #ifdef __linux__
     std::string command = "xdg-open " + get_folder_from_path(path);
     system(command.c_str());
-  }
-  else if(getOs() == "Windows")
-  {
+  #elif _WIN32
     std::string command = "explorer " + get_folder_from_path(path);
     system(command.c_str());
-  }
-  else if(getOs() == "MacOS")
-  {
+  #elif __APPLE__ || __MACH__
     std::string command = "open " + get_folder_from_path(path);
     system(command.c_str());
-  }
+  #endif
   
 }
 void launch_game(std::string path)
 {
-  if(getOs() == "Linux")
-  {
-    std::string command = "chmod +x " + path;
-    system(command.c_str());
-    
-    char *const  args[] = {(char *)path.c_str(), NULL};
-    pid_t pid = fork();
-    switch(pid) {
-      case 0: 
-          execv( path.c_str(), args); 
-          break;
-      case -1: 
-          std::cout << "error\n";
+  #ifdef __linux__
+    if(std::filesystem::exists(path))
+    {
+      std::string command = "chmod +x " + path;
+      system(command.c_str());
+      
+      char *const  args[] = {(char *)path.c_str(), NULL};
+      pid_t pid = fork();
+      switch(pid) {
+        case 0: 
+            execv( path.c_str(), args); 
+            break;
+        case -1: 
+            std::cout << "error\n";
+      }
     }
-  }
-  if(getOs() == "Windows")
-  {
+    else 
+    {
+      Gtk::Dialog warn;
+      
+      Gtk::HeaderBar header;
+      header.set_show_close_button();
+      warn.set_titlebar(header);
+      Gtk::Label warning;
+      Gtk::Image image_warning;
+      image_warning.set_from_icon_name("dialog-warning", Gtk::ICON_SIZE_DIALOG);
+      warning.set_text("The selected game installation could not be found.\nPlease redownload the game.");
+      
+      warn.get_content_area()->pack_start(image_warning);
+      warn.get_content_area()->pack_start(warning);
+
+      warn.set_title("Error");
+      warn.show_all();
+      warn.add_button("OK", 1);
+      switch(warn.run())
+      {
+        case 1:
+          warn.close();
+          break;
+      }
+    }
+    
+  
+  #elif _WIN32
     std::string command = "start " + path;
     system(command.c_str());
-  }
+  #endif
   
 }
 void download(std::string type, Gtk::ProgressBar * prog)
@@ -297,10 +332,7 @@ class MyWindow : public Gtk::Window
 {
   public:
     MyWindow();
-    void set_session(aria2::Session *session)
-    {
-      this->deltaSession = session;
-    }
+  
     void add_instance(std::string name, std::string path, std::string type, std::string version)
     {
       instances.push_back(Instance(name, path, type, version));
@@ -310,7 +342,6 @@ class MyWindow : public Gtk::Window
   private:
     
     std::vector<Instance> instances;
-    aria2::Session * deltaSession;
     Gtk::Button m_new_instance_button;
     Gtk::VBox m_vbox;
     Gtk::HeaderBar titlebar;
@@ -337,8 +368,9 @@ MyWindow::MyWindow()
 
 int main(int argc, char* argv[])
 {
+  #ifdef __linux
   aria2::libraryInit();
-
+  #endif
   auto app = Gtk::Application::create("org.gtkmm.examples.base");
   MyWindow win;
   
@@ -350,8 +382,9 @@ int main(int argc, char* argv[])
   win.show_all();
 
   app->run(win);
-  
+  #ifdef __linux
   aria2::libraryDeinit();
+  #endif
   return 0;
 }
 //Copilot knows:
