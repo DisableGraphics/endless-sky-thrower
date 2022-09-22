@@ -1,3 +1,5 @@
 download/endless-sky-x86_64-continuous.AppImage
 *.AppImage*
 .cache
+build/windows/*
+build/linux/*
