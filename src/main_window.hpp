@@ -160,7 +160,9 @@ inline MyWindow::MyWindow()
   m_vbox.set_border_width(10);
   m_vbox.set_spacing(10);
   m_vbox.set_valign(Gtk::ALIGN_START);
+  #ifdef __linux__
   m_vbox.pack_start(progress);
+  #endif
 
   m_new_instance_button.signal_clicked().connect(sigc::ptr_fun(new_dialog));
 
