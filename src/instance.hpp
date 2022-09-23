@@ -12,7 +12,23 @@ class Instance : public Gtk::VBox
         type = _type;
         set_spacing(10);
         name_label.set_text(name);
-        version = _version;
+        bool has_v{false};
+        for (char & aux : _version)
+        {
+            if (aux == 'v')
+            {
+                has_v = true;
+            }
+        }
+        if(has_v)
+        {
+            version = _version;
+        }
+        else
+        {
+            version = "v" + _version;
+        }
+        
         version_label.set_label(_version);
 
         pack_start(labels_box);
@@ -35,11 +51,11 @@ class Instance : public Gtk::VBox
         
         labels_box.pack_start(update);
         update.set_image_from_icon_name("go-down");
-        update.signal_clicked().connect(sigc::bind<std::string>(sigc::ptr_fun(&download), type, global_prog, get_name()));
+        update.signal_clicked().connect(sigc::bind<std::string>(sigc::ptr_fun(&download), type, global_prog, get_name(), get_version()));
 
         labels_box.pack_start(launch);
         launch.set_image_from_icon_name("media-playback-start");
-        launch.signal_clicked().connect(sigc::bind<std::string>(sigc::ptr_fun(&launch_game), get_name(), type));
+        launch.signal_clicked().connect(sigc::bind<std::string>(sigc::ptr_fun(&launch_game), get_name(), type, version));
         
         show_all();
     }

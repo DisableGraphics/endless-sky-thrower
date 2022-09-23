@@ -22,17 +22,23 @@ inline void open_folder(std::string instance_name)
   
 }
 
-inline void launch_game(const std::string &instance_name, const std::string &instance_type)
+inline void launch_game(const std::string &instance_name, const std::string &instance_type, const std::string &instance_version)
 {
   #ifdef __linux__
     if(std::filesystem::exists("download/" + instance_name))
     {
         std::string command;
+        std::string game_command;
         if(instance_type == "Continuous")
         {
             command = "chmod +x \"download/" + instance_name + "/endless-sky-x86_64-continuous.AppImage\"";
+            game_command = "download/" + instance_name + "/endless-sky-x86_64-continuous.AppImage";
         }
-        std::string game_command = "download/" + instance_name + "/endless-sky-x86_64-continuous.AppImage";
+        else if(instance_type == "Stable")
+        {
+            command = "chmod +x \"download/" + instance_name + "/endless-sky-amd64-" + instance_version + ".AppImage\"";
+            game_command = "download/" + instance_name + "/endless-sky-amd64-" + instance_version + ".AppImage";
+        }
         
         system(command.c_str());
         
@@ -74,7 +80,6 @@ inline void launch_game(const std::string &instance_name, const std::string &ins
     
   
   #elif _WIN32
-    
     if(std::filesystem::exists("download/" + instance_name + "/"))
     {
         std::string command;
@@ -84,7 +89,7 @@ inline void launch_game(const std::string &instance_name, const std::string &ins
         }
         else if(instance_type == "Stable")
         {
-            command = "start /c \"download/" + instance_name + "/EndlessSky-win64-" + version + "/EndlessSky.exe\"";
+            command = "start /c \"download/" + instance_name + "/EndlessSky-win64-" + instance_version + "/EndlessSky.exe\"";
         }
         system(command.c_str());
       
@@ -119,13 +124,12 @@ inline void launch_game(const std::string &instance_name, const std::string &ins
   #endif
   
 }
-inline void download(const std::string &type, Gtk::ProgressBar * prog, const std::string &instance_name)
+inline void download(const std::string &type, Gtk::ProgressBar * prog, const std::string &instance_name, const std::string &instance_version)
 {
   if(!global::lock)
   {
     global::lock = true;
-    std::thread t(std::bind(aria2Thread, prog, type, instance_name));
+    std::thread t(std::bind(aria2Thread, prog, type, instance_name, instance_version));
     t.detach();
-    //aria2Thread(prog, type, instance_name);
   }
 }
