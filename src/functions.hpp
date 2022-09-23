@@ -32,7 +32,7 @@ inline void launch_game(const std::string &instance_name, const std::string &ins
         {
             command = "chmod +x \"download/" + instance_name + "/endless-sky-x86_64-continuous.AppImage\"";
         }
-        std::string game_command = "\"download/" + instance_name + "/endless-sky-x86_64-continuous.AppImage\"";
+        std::string game_command = "download/" + instance_name + "/endless-sky-x86_64-continuous.AppImage";
         
         system(command.c_str());
         
@@ -40,7 +40,7 @@ inline void launch_game(const std::string &instance_name, const std::string &ins
         pid_t pid = fork();
         switch(pid) {
             case 0: 
-                execv( game_command.c_str(), args); 
+                execvp(game_command.c_str(), args);
                 break;
             case -1: 
                 std::cout << "error\n";
