@@ -8,12 +8,16 @@
 #include "dialogs.hpp"
 #include "functions.hpp"
 #include "glibmm/refptr.h"
+#include "gtkmm/button.h"
 #include "gtkmm/dialog.h"
 #include "gtkmm/headerbar.h"
 #include "gtkmm/hvbox.h"
 #include "gtkmm/label.h"
 #include "gtkmm/progressbar.h"
 #include "instance.hpp"
+
+
+
 
 inline void remove_instance(std::string name, std::vector<Instance> *instances, std::vector<Gtk::Button> *instance_buttons)
 {
@@ -95,7 +99,6 @@ inline bool on_deelete_event(GdkEventAny* any_event, std::vector<Instance> *inst
     save_instances(instances);
     return false;
 }
-
 class MyWindow : public Gtk::Window
 {
   public:
@@ -141,6 +144,7 @@ class MyWindow : public Gtk::Window
     {
         return &progress;
     }
+    
 
   private:
     std::vector<Gtk::Button> instance_buttons;
@@ -152,6 +156,19 @@ class MyWindow : public Gtk::Window
     
     
 };
+inline void new_dialog(MyWindow * window)
+{
+    NewInstanceDialog dialog;
+    dialog.set_title("New Instance");
+    dialog.add_button("OK", 1);
+    dialog.show_all();
+    switch(dialog.run())
+    {
+        case 1:
+            window->add_instance(dialog.get_naem(), dialog.get_typee(), dialog.get_version());
+            break;
+    }
+}
 inline MyWindow::MyWindow()
 {
   add(m_vbox);
@@ -164,7 +181,7 @@ inline MyWindow::MyWindow()
   m_vbox.pack_start(progress);
   #endif
 
-  m_new_instance_button.signal_clicked().connect(sigc::ptr_fun(new_dialog));
+  m_new_instance_button.signal_clicked().connect(sigc::bind(sigc::ptr_fun(new_dialog), this));
 
   set_titlebar(titlebar);
   titlebar.set_show_close_button();

@@ -39,6 +39,18 @@ class NewInstanceDialog : public Gtk::Dialog
     {
         return &buttons_box;
     }
+    std::string get_naem()
+    {
+        return name_entry.get_text();
+    }
+    std::string get_version()
+    {
+        return get_selected() == 0? version_entry.get_text() : "0";
+    }
+    std::string get_typee()
+    {
+        return get_selected() == 0?"stable":get_selected() == 1?"continuous":"custom";
+    }
     
   private:
     Gtk::Button cancel_button{"Cancel"};
@@ -73,8 +85,3 @@ class NewInstanceDialog : public Gtk::Dialog
     }
     
 };
-inline void new_dialog()
-{
-    NewInstanceDialog dialog;
-    dialog.run();
-}
