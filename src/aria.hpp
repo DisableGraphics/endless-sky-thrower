@@ -50,27 +50,27 @@ inline void aria2Thread(Gtk::ProgressBar * prog, std::string type, std::string i
             break;
         }
         
-        
+        std::vector<aria2::A2Gid> gids = aria2::getActiveDownload(session);
         if(count >= 10)
         {
-            std::vector<aria2::A2Gid> gids = aria2::getActiveDownload(session);
+            
             for(const auto& gid : gids) 
             {
                 aria2::DownloadHandle* dh = aria2::getDownloadHandle(session, gid);
                 if(dh) 
                 {
                     progress = (double)dh->getCompletedLength() / (double)dh->getTotalLength();
-                    std::cout << progress << std::endl;
                     if(dh->getTotalLength() == 0) 
                     {
                         progress = 0;
                     }
                     
                     
-                    aria2::deleteDownloadHandle(dh);
+                    
                     prog->set_text(std::to_string(progress * 100) + "%");
                     prog->set_fraction(progress);
                 }
+                aria2::deleteDownloadHandle(dh);
             }
             count = 0;
         }

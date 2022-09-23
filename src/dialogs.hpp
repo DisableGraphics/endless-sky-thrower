@@ -49,7 +49,7 @@ class NewInstanceDialog : public Gtk::Dialog
     }
     std::string get_typee()
     {
-        return get_selected() == 0?"stable":get_selected() == 1?"continuous":"custom";
+        return get_selected() == 0?"Stable":get_selected() == 1?"Continuous":"Custom";
     }
     
   private:

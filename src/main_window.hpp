@@ -16,9 +16,6 @@
 #include "gtkmm/progressbar.h"
 #include "instance.hpp"
 
-
-
-
 inline void remove_instance(std::string name, std::vector<Instance> *instances, std::vector<Gtk::Button> *instance_buttons)
 {
     for (int i{0}; i < instances->size(); i++)
