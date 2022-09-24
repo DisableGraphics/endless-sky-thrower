@@ -167,8 +167,21 @@ inline void new_dialog(MyWindow * window)
 }
 inline void open_data_folder()
 {
-    std::string command = "xdg-open " + std::string(getenv("HOME")) + "/.minecraft";
-    system(command.c_str());
+    if(get_OS() == "Linux")
+    {
+        std::string command = "xdg-open " + std::string(getenv("HOME")) + "/.local/share/endless-sky/";
+        system(command.c_str());
+    }
+    else if(get_OS() == "Windows")
+    {
+        std::string command = "explorer " + std::string(getenv("APPDATA")) + "\\endless-sky\\";
+        system(command.c_str());
+    }
+    else if(get_OS() == "MacOS")
+    {
+        std::string command = "open " + std::string(getenv("HOME")) + "/Library/Application Support/endless-sky/";
+        system(command.c_str());
+    }
 }
 inline MyWindow::MyWindow()
 {
