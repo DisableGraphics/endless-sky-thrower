@@ -68,7 +68,7 @@ inline void save_instances(std::vector<Instance> * instances)
     file.open("download/instances.txt");
     for (auto & p : *instances)
     {
-        file << put_circunflexes(p.get_name()) << " " << p.get_typee() << " " << p.get_version() << std::endl;
+        file << put_circunflexes(p.get_name()) << " " << p.get_typee() << " " << put_circunflexes(p.get_version()) << std::endl;
     }
     file.close();
 }
@@ -85,6 +85,7 @@ inline std::vector<Instance> read_instances(Gtk::ProgressBar * global_prog)
         std::stringstream line_ss{line};
         line_ss >> name >> type >> version;
         name = put_spaces(name);
+        version = put_spaces(version); //The version is used for the custom builds as a filename instead of a version number. This is rather hackish, but... do we need to show a version number for an instance without it?
         
         ret.emplace_back(name, type, version, global_prog);
     }
@@ -146,12 +147,10 @@ class MyWindow : public Gtk::Window
   private:
     std::vector<Gtk::Button> instance_buttons;
     std::vector<Instance> instances;
-    Gtk::Button m_new_instance_button;
+    Gtk::Button m_new_instance_button, m_open_data_folder_button;
     Gtk::ProgressBar progress;
     Gtk::VBox m_vbox;
-    Gtk::HeaderBar titlebar;
-    
-    
+    Gtk::HeaderBar titlebar;    
 };
 inline void new_dialog(MyWindow * window)
 {
@@ -166,24 +165,31 @@ inline void new_dialog(MyWindow * window)
             break;
     }
 }
+inline void open_data_folder()
+{
+    std::string command = "xdg-open " + std::string(getenv("HOME")) + "/.minecraft";
+    system(command.c_str());
+}
 inline MyWindow::MyWindow()
 {
-  add(m_vbox);
-  titlebar.pack_start(m_new_instance_button);
-  m_new_instance_button.set_image_from_icon_name("document-new");
-  m_vbox.set_border_width(10);
-  m_vbox.set_spacing(10);
-  m_vbox.set_valign(Gtk::ALIGN_START);
-  #ifdef __linux__
-  m_vbox.pack_start(progress);
-  #endif
+    add(m_vbox);
+    titlebar.pack_start(m_new_instance_button);
+    titlebar.pack_start(m_open_data_folder_button);
+    m_open_data_folder_button.set_image_from_icon_name("folder-symbolic");
+    m_new_instance_button.set_image_from_icon_name("document-new");
+    m_vbox.set_border_width(10);
+    m_vbox.set_spacing(10);
+    m_vbox.set_valign(Gtk::ALIGN_START);
+    #ifdef __linux__
+    m_vbox.pack_start(progress);
+    #endif
+    m_open_data_folder_button.signal_clicked().connect(sigc::ptr_fun(&open_data_folder));
+    m_new_instance_button.signal_clicked().connect(sigc::bind(sigc::ptr_fun(new_dialog), this));
 
-  m_new_instance_button.signal_clicked().connect(sigc::bind(sigc::ptr_fun(new_dialog), this));
-
-  set_titlebar(titlebar);
-  titlebar.set_show_close_button();
-  set_title("ESThrower");
-  titlebar.set_subtitle("Endless Sky Launcher");
-  set_default_size(800, 600);
+    set_titlebar(titlebar);
+    titlebar.set_show_close_button();
+    set_title("ESThrower");
+    titlebar.set_subtitle("Endless Sky Launcher");
+    set_default_size(800, 600);
 }
 

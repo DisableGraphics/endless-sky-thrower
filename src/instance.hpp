@@ -20,15 +20,23 @@ class Instance : public Gtk::VBox
                 has_v = true;
             }
         }
-        if(has_v)
+        if(type != "Custom")
+        {
+            if(has_v)
+            {
+                version = _version;
+            }
+            else
+            {
+                version = "v" + _version;
+            }
+        }
+        else 
         {
             version = _version;
         }
-        else
-        {
-            version = "v" + _version;
-        }
-        
+        pack_start(separator1);
+        pack_end(separator2);
         version_label.set_label(_version);
 
         pack_start(labels_box);
@@ -40,6 +48,11 @@ class Instance : public Gtk::VBox
             version_label.set_label("Continuous");
             labels_box.pack_start(version_label);
         }
+        else if(type == "Custom")
+        {
+            version_label.set_label("Custom");
+            labels_box.pack_start(version_label);
+        }
         else
         {
             labels_box.pack_start(version_label);
@@ -47,9 +60,12 @@ class Instance : public Gtk::VBox
 
         labels_box.pack_start(folder);
         folder.set_image_from_icon_name("folder-symbolic");
-        folder.signal_clicked().connect(sigc::bind<std::string>(sigc::ptr_fun(&open_folder), get_name()));
+        folder.signal_clicked().connect(sigc::bind<std::string>(sigc::ptr_fun(&open_folder), get_name(), get_typee(), get_version()));
         
-        labels_box.pack_start(update);
+        if(type != "Custom")
+        {
+            labels_box.pack_start(update);
+        }
         update.set_image_from_icon_name("go-down");
         update.signal_clicked().connect(sigc::bind<std::string>(sigc::ptr_fun(&download), type, global_prog, get_name(), get_version()));
 
@@ -75,14 +91,18 @@ class Instance : public Gtk::VBox
     {
         return &labels_box;
     }
-    //Deletes everything related to this instance
+    //Deletes everything related to this instance. Unless it's a custom instance, then you'll have to manually delete the folder.
     void get_rekt()
     {
-        std::filesystem::remove_all("download/" + get_name());
+        if(type != "Custom")
+        {
+            std::filesystem::remove_all("download/" + get_name());
+        }
     }
     
   private:
     std::string type;
+    Gtk::Separator separator1, separator2;
     std::string version;
     Gtk::Label name_label;
     Gtk::Label version_label;

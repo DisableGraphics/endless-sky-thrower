@@ -7,11 +7,35 @@
 #include <thread>
 #include <unistd.h>
 
-inline void open_folder(std::string instance_name)
+inline std::string get_folder_for_filename(std::string filename)
+{
+	std::string folder;
+	for(int i{static_cast<int>(filename.size() - 1)}; i >= 0; i--)
+	{
+		if(filename[i] == '/')
+		{
+			folder = filename.substr(0, i);
+			break;
+		}
+	}
+	return folder;
+}
+
+inline void open_folder(std::string instance_name, std::string instance_type, std::string instance_version)
+
 {
   #ifdef __linux__
-    std::string command = "xdg-open \"download/" + instance_name + "\"";
-    system(command.c_str());
+	if(instance_type != "Custom")
+	{
+    	std::string command = "xdg-open \"download/" + instance_name + "\"";
+    	system(command.c_str());
+	}
+	else
+	{
+		std::string command = "xdg-open \"" + get_folder_for_filename(instance_version) + "\"";
+		
+		system(command.c_str());
+	}
   #elif _WIN32
     std::string command = "explorer \"download/" + instance_name + "\"";
     system(command.c_str());
@@ -25,20 +49,38 @@ inline void open_folder(std::string instance_name)
 inline void launch_game(const std::string &instance_name, const std::string &instance_type, const std::string &instance_version)
 {
   #ifdef __linux__
+  if(instance_type != "Custom")
+  {
     if(std::filesystem::exists("download/" + instance_name))
     {
         std::string command;
         std::string game_command;
-        if(instance_type == "Continuous")
-        {
-            command = "chmod +x \"download/" + instance_name + "/endless-sky-x86_64-continuous.AppImage\"";
-            game_command = "download/" + instance_name + "/endless-sky-x86_64-continuous.AppImage";
-        }
-        else if(instance_type == "Stable")
-        {
-            command = "chmod +x \"download/" + instance_name + "/endless-sky-amd64-" + instance_version + ".AppImage\"";
-            game_command = "download/" + instance_name + "/endless-sky-amd64-" + instance_version + ".AppImage";
-        }
+		if(get_OS() == "Linux")
+		{
+			if(instance_type == "Continuous")
+			{
+				command = "chmod +x \"download/" + instance_name + "/endless-sky-x86_64-continuous.AppImage\"";
+				game_command = "download/" + instance_name + "/endless-sky-x86_64-continuous.AppImage";
+			}
+			else if(instance_type == "Stable")
+			{
+				command = "chmod +x \"download/" + instance_name + "/endless-sky-amd64-" + instance_version + ".AppImage\"";
+				game_command = "download/" + instance_name + "/endless-sky-amd64-" + instance_version + ".AppImage";
+			}
+		}
+		else if(get_OS() == "Windows")
+		{
+			if(instance_type == "Continuous")
+			{
+				command = "7z x \"download/" + instance_name + "/EndlessSky-win64-continuous.zip\" -o\"download/" + instance_name + "\"";
+				game_command = "download/" + instance_name + "/EndlessSky-win64-continuous/EndlessSky.exe";
+			}
+			else if(instance_type == "Stable")
+			{
+				command = "7z x \"download/" + instance_name + "/endless-sky-win64-" + instance_version_minus_v(instance_version) + ".zip\" -o\"download/" + instance_name + "\"";
+				game_command = "download/" + instance_name + "/endless-sky-win64-" + instance_version_minus_v(instance_version) + "/EndlessSky.exe";
+			}
+		}
         
         system(command.c_str());
         
@@ -77,6 +119,27 @@ inline void launch_game(const std::string &instance_name, const std::string &ins
           break;
       }
     }
+  }
+  else
+  {
+		std::string command;
+        std::string game_command;
+        
+		command = "chmod +x \"" + instance_version + "\"";
+		game_command = instance_version;
+        
+        system(command.c_str());
+        
+        char *const  args[] = {(char *)game_command.c_str()};
+        pid_t pid = fork();
+        switch(pid) {
+            case 0: 
+                execvp(game_command.c_str(), args);
+                break;
+            case -1: 
+                std::cout << "error\n";
+        }
+  } 
     
   
   #elif _WIN32
