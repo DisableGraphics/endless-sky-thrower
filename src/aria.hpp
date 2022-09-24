@@ -107,7 +107,20 @@ inline void aria2Thread(Gtk::ProgressBar * progress_bar, std::string type, std::
             strcpy(url, ("https://github.com/endless-sky/endless-sky/releases/download/" + instance_version + "/endless-sky-macos-" + instance_version + ".zip").c_str());
         }
     }
-    std::string out_str = ("download/" + instance_name + "/endless-sky-x86_64-continuous.AppImage").c_str();
+    std::string file_prefix;
+    if(get_OS() == "Linux")
+    {
+        file_prefix = "endless-sky.AppImage";
+    }
+    else if(get_OS() == "Windows")
+    {
+        file_prefix = "EndlessSky-win64.zip";
+    }
+    else if(get_OS() == "Mac OS")
+    {
+        file_prefix = "EndlessSky-macos.zip";
+    }
+    std::string out_str = ("download/" + instance_name + "/" + file_prefix).c_str();
     char outfilename[FILENAME_MAX];
     strcpy(outfilename, out_str.c_str());
     curl = curl_easy_init();
