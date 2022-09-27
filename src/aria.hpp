@@ -7,7 +7,8 @@
 #include "global_variables.hpp"
 #include "gtkmm/headerbar.h"
 #include <curl/curl.h>
-#define MINIMAL_PROGRESS_FUNCTIONALITY_INTERVAL 3000000
+//Makes the download progress bar look like shit, but this works. 100000 is too low, so the program crashes. Wil take a look at it in a really shitty PC.
+#define MINIMAL_PROGRESS_FUNCTIONALITY_INTERVAL 300000
 
 inline std::string get_OS()
 {
@@ -46,13 +47,15 @@ static int xferinfo(void *p,
     /* under certain circumstances it may be desirable for certain functionality
         to only run every N seconds, in order to do this the transaction time can
         be used */
+    //I think that the progress bar is updated too fast for slow computers to process. It updates every 300 millisecons, but
+    //The look and feel is far from optimal
     if((curtime - myp->lastruntime) >= MINIMAL_PROGRESS_FUNCTIONALITY_INTERVAL) 
     {
         myp->lastruntime = curtime;
-    }
-    if(dlnow != 0 && dltotal != 0)
-    {
-        myp->progr->set_fraction((double)dlnow/(double)dltotal);
+        if(dlnow != 0 && dltotal != 0)
+        {
+            myp->progr->set_fraction((double)dlnow / (double)dltotal);
+        }
     }
     return 0;
 }
@@ -62,7 +65,12 @@ inline std::string instance_version_minus_v(std::string instance_version)
     version.erase(0, 1);
     return version;
 }
+//TODO: Determine what's crashing this function in low-end systems. Won't crash on a system with 16 Gb RAM, Ryzen 7 5800H
+//and Nvidia RTX 3050 Ti, but will crash on a system with 8 Gb RAM, Intel Core i5 3360M and Intel HD Graphics 4000.
+//The gap is too high to be a memory issue, so it's probably a CPU issue.
 
+//When downloading, the progress bar freezes and crashes the program.
+//I think the problem lies on the xferinfo function, but I'm not sure.
 inline void aria2Thread(Gtk::ProgressBar * progress_bar, std::string type, std::string instance_name, std::string instance_version)
 {
     if(!std::filesystem::exists("download/" + instance_name))
