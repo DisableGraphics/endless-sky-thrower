@@ -198,7 +198,7 @@ inline void aria2Thread(Gtk::ProgressBar * progress_bar, std::string type, std::
     }
     
     //std::filesystem::rename("endless-sky-x86_64-continuous.AppImage", (std::string)"download/" + instance_name + "/endless-sky-x86_64-continuous.AppImage");
-    progress_bar->set_text("Download Complete");
+    //progress_bar->set_text("Download Complete");
     progress_bar->set_fraction(0);
     global::lock = false;
 }
