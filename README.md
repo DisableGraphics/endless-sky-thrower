@@ -10,4 +10,4 @@ This program requires:
 # Support
 This application downloads and installs endless sky instances for you. Moreover, you can add custom instances that are already downloaded on your disk (For example: a PR, a content update...).
 # Wanted:
-Someone who can try to compile this to macOS
+Someone who can try to compile this to macOS (And test it, of course)
