@@ -126,9 +126,11 @@ inline void aria2Thread(Gtk::ProgressBar * progress_bar, std::string type, std::
     {
         file_prefix = "EndlessSky-macos.zip";
     }
+    //I like that I can output the file to a specific filename, so I don't have to rename it later.
     std::string out_str = ("download/" + instance_name + "/" + file_prefix).c_str();
     char outfilename[FILENAME_MAX];
     strcpy(outfilename, out_str.c_str());
+    //Begin the download
     curl = curl_easy_init();
     if (curl) 
     {
@@ -138,10 +140,12 @@ inline void aria2Thread(Gtk::ProgressBar * progress_bar, std::string type, std::
         fp = fopen(outfilename,"wb");
         curl_easy_setopt(curl, CURLOPT_URL, url);
         curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
+        //The write_data function will write the downloaded data to a file
         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_data);
         curl_easy_setopt(curl, CURLOPT_WRITEDATA, fp);
         curl_easy_setopt(curl, CURLOPT_XFERINFOFUNCTION, xferinfo);
         /* pass the struct pointer into the xferinfo function */
+        //Note: xferinfo is used to update the progress bar
         curl_easy_setopt(curl, CURLOPT_XFERINFODATA, &prog);
         curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 0L);
 
@@ -156,12 +160,6 @@ inline void aria2Thread(Gtk::ProgressBar * progress_bar, std::string type, std::
         fclose(fp);
     }
 
-    if(type == "Continuous")
-    {
-    }
-    else if(type == "Stable")
-    {
-    }
     double progress = 0;
     int count{0};
     for(;;) 
@@ -174,6 +172,7 @@ inline void aria2Thread(Gtk::ProgressBar * progress_bar, std::string type, std::
         }
 
     }
+    //Dialog to notify the user that the download is complete
     Gtk::Dialog finished_downloading_dialog;
     Gtk::VBox finished_downloading_vbox;
     Gtk::HeaderBar finished_downloading_headerbar;

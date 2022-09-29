@@ -15,7 +15,7 @@
 #include "gtkmm/label.h"
 #include "gtkmm/progressbar.h"
 #include "instance.hpp"
-
+//Removes the instance from the list of instances using its name
 inline void remove_instance(std::string name, std::vector<Instance> *instances, std::vector<Gtk::Button> *instance_buttons)
 {
     for (int i{0}; i < instances->size(); i++)
@@ -30,6 +30,7 @@ inline void remove_instance(std::string name, std::vector<Instance> *instances, 
     }
     
 }
+//Adds the '^' symbol, used as a separator for the spaces in the instance name in the file, since the ifstream is a pain in the @$$
 inline std::string put_circunflexes(std::string str)
 {
     std::string new_str;
@@ -46,6 +47,7 @@ inline std::string put_circunflexes(std::string str)
     }
     return new_str;
 }
+//Removes the '^' symbol, used as a separator for the spaces in the instance name in the file, since the ifstream is a pain in the @$$
 inline std::string put_spaces(std::string str)
 {
     std::string new_str;
@@ -62,6 +64,7 @@ inline std::string put_spaces(std::string str)
     }
     return new_str;
 }
+//Saves the instances to the disk
 inline void save_instances(std::vector<Instance> * instances)
 {
     std::ofstream file;
@@ -72,6 +75,7 @@ inline void save_instances(std::vector<Instance> * instances)
     }
     file.close();
 }
+//Loads the instances from the disk
 inline std::vector<Instance> read_instances(Gtk::ProgressBar * global_prog)
 {
     std::vector<Instance> ret;
@@ -92,16 +96,19 @@ inline std::vector<Instance> read_instances(Gtk::ProgressBar * global_prog)
     file.close();
     return ret;
 }
+//Fired when the window is closed. Saves the instances and closes the window.
+//Note the use of the 'deelete' word, since the on_delete_event is an already defined function in Gtk::Window
 inline bool on_deelete_event(GdkEventAny* any_event, std::vector<Instance> *instances)
 {
     save_instances(instances);
     return false;
 }
+//The main window. Inherits from Gtk::Window
 class MyWindow : public Gtk::Window
 {
   public:
     MyWindow();
-  
+    //Adds an intance to the list of instances and shows it in the window
     void add_instance(std::string name, std::string type, std::string version)
     {
         for (auto & p : instances)
@@ -134,16 +141,17 @@ class MyWindow : public Gtk::Window
         instances[instances.size() - 1].show_all();
         m_vbox.pack_start(instances[instances.size() - 1]);
     }
+    //Returns the list of instances
     std::vector<Instance> * get_instances()
     {
         return &instances;
     }
+    //Returns the progress bar
     Gtk::ProgressBar * get_progress()
     {
         return &progress;
     }
     
-
   private:
     std::vector<Gtk::Button> instance_buttons;
     std::vector<Instance> instances;
@@ -152,6 +160,8 @@ class MyWindow : public Gtk::Window
     Gtk::VBox m_vbox;
     Gtk::HeaderBar titlebar;    
 };
+//Creates a new dialog for creating a new instance
+//Taking into account the pointer fuckery done here, I'm amazed this worked the first time I tried it.
 inline void new_dialog(MyWindow * window)
 {
     NewInstanceDialog dialog;
@@ -165,6 +175,7 @@ inline void new_dialog(MyWindow * window)
             break;
     }
 }
+//Opens the data folder in the file manager
 inline void open_data_folder()
 {
     if(get_OS() == "Linux")
@@ -183,6 +194,7 @@ inline void open_data_folder()
         system(command.c_str());
     }
 }
+//The MyWindow constructor. Puts the widgets in place and connects the signals
 inline MyWindow::MyWindow()
 {
     add(m_vbox);
