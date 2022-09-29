@@ -9,3 +9,5 @@ This program requires:
 - Ubuntu/Debian: ```sudo apt install libgkmm-3.0-dev curl```
 # Support
 This application downloads and installs endless sky instances for you. Moreover, you can add custom instances that are already downloaded on your disk (For example: a PR, a content update...).
+# Wanted:
+Someone who can try to compile this to macOS

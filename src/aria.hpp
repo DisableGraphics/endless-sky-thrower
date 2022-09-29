@@ -7,7 +7,8 @@
 #include "global_variables.hpp"
 #include "gtkmm/headerbar.h"
 #include <curl/curl.h>
-//Makes the download progress bar look like shit, but this works. 100000 is too low, so the program crashes. Wil take a look at it in a really shitty PC.
+//Every 300 milliseconds, the progress bar will be updated. The progress bar would crash if done with less interval time
+//on my third gen Intel shitty laptop
 #define MINIMAL_PROGRESS_FUNCTIONALITY_INTERVAL 300000
 
 inline std::string get_OS()
@@ -22,18 +23,19 @@ inline std::string get_OS()
         return "Other";
     #endif
 }
+//Used internally for the xferinfo function
 struct myprogress {
   curl_off_t lastruntime; /* type depends on version, see above */
   CURL *curl;
   Gtk::ProgressBar * progr;
 };
-
+//Will write the downloaded data to a file
 inline size_t write_data(void *ptr, size_t size, size_t nmemb, FILE *stream) 
 {
     size_t written = fwrite(ptr, size, nmemb, stream);
     return written;
 }
-
+//This function is used to update the progress bar. Will set the progress bar to a fraction of the download progress.
 static int xferinfo(void *p,
                     curl_off_t dltotal, curl_off_t dlnow,
                     curl_off_t ultotal, curl_off_t ulnow)
@@ -44,11 +46,9 @@ static int xferinfo(void *p,
  
     curl_easy_getinfo(curl, CURLINFO_TOTAL_TIME_T, &curtime);
  
-    /* under certain circumstances it may be desirable for certain functionality
-        to only run every N seconds, in order to do this the transaction time can
-        be used */
-    //I think that the progress bar is updated too fast for slow computers to process. It updates every 300 millisecons, but
-    //The look and feel is far from optimal
+    
+    //Every 300 milliseconds, the progress bar will update. This is to prevent the program from crashing, since it
+    //would update the progress bar too fast for my shitty laptop to process correctly.
     if((curtime - myp->lastruntime) >= MINIMAL_PROGRESS_FUNCTIONALITY_INTERVAL) 
     {
         myp->lastruntime = curtime;
@@ -59,18 +59,15 @@ static int xferinfo(void *p,
     }
     return 0;
 }
+//This function returns the instance name without the first "v" in the version number
+//Used (mostly) for windows, since the ES naming scheme sucks
 inline std::string instance_version_minus_v(std::string instance_version)
 {
     std::string version = instance_version;
     version.erase(0, 1);
     return version;
 }
-//TODO: Determine what's crashing this function in low-end systems. Won't crash on a system with 16 Gb RAM, Ryzen 7 5800H
-//and Nvidia RTX 3050 Ti, but will crash on a system with 8 Gb RAM, Intel Core i5 3360M and Intel HD Graphics 4000.
-//The gap is too high to be a memory issue, so it's probably a CPU issue.
-
-//When downloading, the progress bar freezes and crashes the program.
-//I think the problem lies on the xferinfo function, but I'm not sure.
+//This is a thread used to: download the instance and update the progress bar
 inline void aria2Thread(Gtk::ProgressBar * progress_bar, std::string type, std::string instance_name, std::string instance_version)
 {
     if(!std::filesystem::exists("download/" + instance_name))
@@ -107,7 +104,8 @@ inline void aria2Thread(Gtk::ProgressBar * progress_bar, std::string type, std::
         }
         else if(get_OS() == "Windows")
         {
-            //Courtesy of the great naming scheme of the endless sky developers!
+            //<irony>Courtesy of the great naming scheme of the endless sky developers!</irony> 
+            //(Yes, I'm fluent in HTML but who doesn't at this point in time)
             strcpy(url, ("https://github.com/endless-sky/endless-sky/releases/download/" + instance_version + "/endless-sky-win64-" + instance_version_minus_v(instance_version) + ".zip").c_str());
         }
         else if(get_OS() == "Mac OS")
@@ -196,9 +194,6 @@ inline void aria2Thread(Gtk::ProgressBar * progress_bar, std::string type, std::
     {
         finished_downloading_dialog.close();
     }
-    
-    //std::filesystem::rename("endless-sky-x86_64-continuous.AppImage", (std::string)"download/" + instance_name + "/endless-sky-x86_64-continuous.AppImage");
-    //progress_bar->set_text("Download Complete");
     progress_bar->set_fraction(0);
     global::lock = false;
 }

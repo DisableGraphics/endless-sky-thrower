@@ -2,7 +2,15 @@
 #include "gtkmm/hvbox.h"
 #include <gtkmm.h>
 #include <iostream>
-
+//When creating an instance, this dialog will appear.
+//It will ask the user to:
+    //1. Introduce the type of instance (For now: Stable, Continuous and Custom)
+    //2. Introduce the name of the instance
+    //3. If the user chooses "Custom", it will ask for the executable of the instance
+    //4. If the user chooses "Stable", it will ask for the version of the instance
+    //5. If the user chooses "Continuous", won't ask for anything
+//Then it will create a new instance with the given information
+//The instance is another class, found in the "instance.hpp" file
 class NewInstanceDialog : public Gtk::Dialog
 {
   public:
@@ -41,14 +49,19 @@ class NewInstanceDialog : public Gtk::Dialog
     {
         return &buttons_box;
     }
+    //Returns the name of the instance
+    //Note the naem(), since get_name() is already used by Gtk::Dialog
     std::string get_naem()
     {
         return name_entry.get_text();
     }
+    //Returns the version of the instance. Unless it's continuous, which will return "0"
     std::string get_version()
     {
         return get_selected() != 1? version_entry.get_text() : "0";
     }
+    //This returns the type of the instance. Please note that it has typee() instead of type(), since the get_type()
+    //function is already defined in the Gtk::Dialog class (And returns a bunch of weird numbers)
     std::string get_typee()
     {
         return get_selected() == 0?"Stable":get_selected() == 1?"Continuous":"Custom";
@@ -65,11 +78,12 @@ class NewInstanceDialog : public Gtk::Dialog
     Gtk::HBox entry_and_button;
     
     Gtk::Entry name_entry;
-    
+    //Callback for the cancel button
     void on_cancel_button_clicked()
     {
         close();
     }
+    //Callback for the browse button (In case of custom instances)
     void on_browse_button_clicked()
     {
         Gtk::FileChooserDialog dialog("Please select the custom endless sky executable", Gtk::FILE_CHOOSER_ACTION_OPEN);
@@ -90,6 +104,7 @@ class NewInstanceDialog : public Gtk::Dialog
                 break;
         }
     }
+    
     void on_combo_changed()
     {
         if(instance_type_combo.get_active_row_number() == 0)
