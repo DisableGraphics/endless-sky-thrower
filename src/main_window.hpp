@@ -152,11 +152,15 @@ class MyWindow : public Gtk::Window
     {
         return &progress;
     }
+    std::vector<Gtk::Button> * get_instance_buttons()
+    {
+        return &instance_buttons;
+    }
     
   private:
     std::vector<Gtk::Button> instance_buttons;
     std::vector<Instance> instances;
-    Gtk::Button m_new_instance_button, m_open_data_folder_button;
+    Gtk::Button m_new_instance_button, m_open_data_folder_button, m_uninstall_all_button;
     Gtk::ProgressBar progress;
     Gtk::VBox m_vbox;
     Gtk::HeaderBar titlebar;    
@@ -173,6 +177,41 @@ inline void new_dialog(MyWindow * window)
     {
         case 1:
             window->add_instance(dialog.get_naem(), dialog.get_typee(), dialog.get_version());
+            break;
+    }
+}
+//Removes all instances and the .local/share/endless-sky folder
+inline void uninstall_all(Gtk::ProgressBar * progress, MyWindow * mywindow)
+{
+    Gtk::Dialog warn;
+    warn.set_title("Warning");
+    warn.get_action_area()->pack_start(*Gtk::manage(new Gtk::Label("Are you sure you want to uninstall all instances and all the data saved?\nThis action cannot be undone.")));
+    warn.add_button("Cancel", 1);
+    warn.add_button("Uninstall", 2);
+    warn.show_all();
+    switch(warn.run())
+    {
+        case 1:
+            warn.close();
+            break;
+        case 2:
+            warn.close();
+            progress->set_fraction(0);
+            progress->set_text("Uninstalling...");
+            progress->show();
+            while(Gtk::Main::events_pending())
+            {
+                Gtk::Main::iteration();
+            }
+            std::vector<Instance> instances = read_instances(progress);
+            for (auto & p : instances)
+            {
+                remove_instance(p.get_name(), &instances, mywindow->get_instance_buttons(), mywindow);
+            }
+            std::string command = "rm -rf ~/.local/share/endless-sky";
+            system(command.c_str());
+            progress->set_fraction(1);
+            progress->set_text("Done!");
             break;
     }
 }
@@ -201,6 +240,7 @@ inline MyWindow::MyWindow()
     add(m_vbox);
     titlebar.pack_start(m_new_instance_button);
     titlebar.pack_start(m_open_data_folder_button);
+    titlebar.pack_start(m_uninstall_all_button);
     m_open_data_folder_button.set_image_from_icon_name("folder-symbolic");
     m_new_instance_button.set_image_from_icon_name("document-new");
     m_vbox.set_border_width(10);
