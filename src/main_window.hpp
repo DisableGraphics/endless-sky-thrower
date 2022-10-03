@@ -16,7 +16,7 @@
 #include "gtkmm/progressbar.h"
 #include "instance.hpp"
 //Removes the instance from the list of instances using its name
-inline void remove_instance(std::string name, std::vector<Instance> *instances, std::vector<Gtk::Button> *instance_buttons)
+inline void remove_instance(std::string name, std::vector<Instance> *instances, std::vector<Gtk::Button> *instance_buttons, Gtk::Window * window)
 {
     for (int i{0}; i < instances->size(); i++)
     {
@@ -25,6 +25,7 @@ inline void remove_instance(std::string name, std::vector<Instance> *instances, 
             instances->at(i).get_rekt();
             instances->erase(instances->begin() + i);
             instance_buttons->erase(instance_buttons->begin() + i);
+            window->show_all();
             return;
         }
     }
@@ -135,7 +136,7 @@ class MyWindow : public Gtk::Window
         instance_buttons.push_back(Gtk::Button());
         tmp->pack_start(instance_buttons[instance_buttons.size()-1]);
         instance_buttons[instance_buttons.size() -1].set_image_from_icon_name("user-trash-symbolic");
-        instance_buttons[instance_buttons.size()-1].signal_clicked().connect(sigc::bind(sigc::ptr_fun(&remove_instance), instances[instances.size()-1].get_name(), &instances, &instance_buttons));
+        instance_buttons[instance_buttons.size()-1].signal_clicked().connect(sigc::bind(sigc::ptr_fun(&remove_instance), instances[instances.size()-1].get_name(), &instances, &instance_buttons, this));
         this->signal_delete_event().connect(sigc::bind(sigc::ptr_fun(&on_deelete_event),  &instances));
 
         instances[instances.size() - 1].show_all();
