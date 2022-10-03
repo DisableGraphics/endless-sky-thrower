@@ -12,6 +12,7 @@
 #include "gtkmm/dialog.h"
 #include "gtkmm/headerbar.h"
 #include "gtkmm/hvbox.h"
+#include "gtkmm/image.h"
 #include "gtkmm/label.h"
 #include "gtkmm/progressbar.h"
 #include "instance.hpp"
@@ -184,10 +185,31 @@ inline void new_dialog(MyWindow * window)
 inline void uninstall_all(Gtk::ProgressBar * progress, MyWindow * mywindow)
 {
     Gtk::Dialog warn;
-    warn.set_title("Warning");
-    warn.get_action_area()->pack_start(*Gtk::manage(new Gtk::Label("Are you sure you want to uninstall all instances and all the data saved?\nThis action cannot be undone.")));
-    warn.add_button("Cancel", 1);
-    warn.add_button("Uninstall", 2);
+    Gtk::HeaderBar titlebar;
+
+    titlebar.set_show_close_button();
+    warn.set_titlebar(titlebar);
+    titlebar.set_title("Warning");
+    Gtk::Image *image = Gtk::manage(new Gtk::Image());
+    image->set_from_icon_name("dialog-warning", Gtk::ICON_SIZE_DIALOG);
+    Gtk::VBox *warn_vbox = Gtk::manage(new Gtk::VBox());
+    warn_vbox->pack_start(*image);
+    warn.get_action_area()->pack_start(*warn_vbox);
+    warn_vbox->pack_start(*Gtk::manage(new Gtk::Label("Are you sure you want to uninstall all instances?\nThis will delete all instances and the .local/share/endless-sky folder.\nThis action cannot be undone.")));
+    warn_vbox->get_children()[1]->set_margin_top(10);
+    warn_vbox->get_children()[1]->set_margin_bottom(10);
+    warn_vbox->get_children()[1]->set_margin_left(10);
+    warn_vbox->get_children()[1]->set_margin_right(10);
+    warn_vbox->get_children()[1]->set_halign(Gtk::ALIGN_CENTER);
+    
+    Gtk::Button * cancel = warn.add_button("Cancel", 1);
+    Gtk::Button * uninstall = warn.add_button("Uninstall", 2);
+    warn.get_action_area()->remove(*cancel);
+    warn.get_action_area()->remove(*uninstall);
+
+    warn_vbox->pack_start(*cancel);
+    warn_vbox->pack_start(*uninstall);
+
     warn.show_all();
     switch(warn.run())
     {
@@ -210,10 +232,11 @@ inline void uninstall_all(Gtk::ProgressBar * progress, MyWindow * mywindow)
             }
             std::string command = "rm -rf ~/.local/share/endless-sky";
             system(command.c_str());
-            progress->set_fraction(1);
+            progress->set_fraction(0);
             progress->set_text("Done!");
             break;
     }
+    mywindow->show_all();
 }
 //Opens the data folder in the file manager
 inline void open_data_folder()
@@ -243,12 +266,14 @@ inline MyWindow::MyWindow()
     titlebar.pack_start(m_uninstall_all_button);
     m_open_data_folder_button.set_image_from_icon_name("folder-symbolic");
     m_new_instance_button.set_image_from_icon_name("document-new");
+    m_uninstall_all_button.set_image_from_icon_name("user-trash-symbolic");
     m_vbox.set_border_width(10);
     m_vbox.set_spacing(10);
     m_vbox.set_valign(Gtk::ALIGN_START);
     m_vbox.pack_start(progress);
     m_open_data_folder_button.signal_clicked().connect(sigc::ptr_fun(&open_data_folder));
     m_new_instance_button.signal_clicked().connect(sigc::bind(sigc::ptr_fun(new_dialog), this));
+    m_uninstall_all_button.signal_clicked().connect(sigc::bind(sigc::ptr_fun(&uninstall_all), &progress, this));
 
     set_titlebar(titlebar);
     titlebar.set_show_close_button();
