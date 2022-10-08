@@ -1,0 +1,21 @@
+PREFIX=i686-w64-mingw32.static-
+CC=$(PREFIX)gcc
+CXX=$(PREFIX)g++
+CFLAGS=-c -Wall
+#Link with Gtkmm 3.0 and libcurl
+LDFLAGS=`$(PREFIX)pkg-config --cflags --libs gtkmm-3.0 libcurl`
+SOURCES=src/main.cpp
+OBJECTS=$(SOURCES:.cpp=.o)
+EXECUTABLE_FOLDER=build/win32/
+EXECUTABLE=build/win32/$(shell basename $(CURDIR))
+
+all: $(EXECUTABLE_FOLDER) $(EXECUTABLE)
+
+$(EXECUTABLE):
+	$(CXX) $(SOURCES) -o $@ $(LDFLAGS)
+
+$(EXECUTABLE_FOLDER):
+	mkdir -p $(EXECUTABLE_FOLDER)
+
+clean:
+	rm -rf build/*

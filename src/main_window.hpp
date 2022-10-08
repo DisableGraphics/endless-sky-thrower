@@ -5,6 +5,7 @@
 #include <sstream>
 #include <string>
 #include <vector>
+#include "aria.hpp"
 #include "dialogs.hpp"
 #include "functions.hpp"
 #include "glibmm/refptr.h"
@@ -230,7 +231,16 @@ inline void uninstall_all(Gtk::ProgressBar * progress, MyWindow * mywindow)
             {
                 remove_instance(p.get_name(), &instances, mywindow->get_instance_buttons(), mywindow);
             }
+            
             std::string command = "rm -rf ~/.local/share/endless-sky";
+            if(get_OS() == "Windows")
+            {
+                command = "rmdir /s /q %APPDATA%\\.local\\share\\endless-sky";
+            }
+            else if(get_OS() == "MacOS")
+            {
+                command = "rm -rf ~/Library/Application\\ Support/endless-sky";
+            }
             system(command.c_str());
             progress->set_fraction(0);
             progress->set_text("Done!");

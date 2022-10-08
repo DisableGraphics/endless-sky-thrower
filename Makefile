@@ -1,10 +1,28 @@
-all: linux windows
+CC=gcc
+CXX=g++
+CFLAGS=-c -Wall
+#Link with Gtkmm 3.0 and libcurl
+LDFLAGS= `pkg-config --cflags --libs gtkmm-3.0` -lcurl -lyaml-cpp
+SOURCES=src/main.cpp
+OBJECTS=$(SOURCES:.cpp=.o)
+EXECUTABLE_FOLDER=build/$(shell uname)
+EXECUTABLE=build/$(shell uname)/$(shell basename $(CURDIR))
+INCLUDE_FLAGS=-Iinclude
+LINK_FLAGS=-Llib
 
-linux:
-	g++ src/main.cpp -o build/linux/esthrower `pkg-config gtkmm-3.0 --cflags --libs` `curl-config --cflags --libs` -std=c++17
+all: $(EXECUTABLE_FOLDER) remove-executable $(EXECUTABLE)
 
-windows:
-	i686-w64-mingw32.static-g++ src/main.cpp -o build/windows/esthrower.exe `i686-w64-mingw32.static-pkg-config gtkmm-3.0 --cflags --libs` `i686-w64-mingw32.static-curl-config --cflags --libs` -std=c++17
+$(EXECUTABLE):
+	$(CXX) $(INCLUDE_FLAGS) $(SOURCES) -o $@ $(LINK_FLAGS) $(LDFLAGS)
+
+$(EXECUTABLE_FOLDER):
+	mkdir -p $(EXECUTABLE_FOLDER)
 
 clean:
-	rm build/esthrower
+	rm -rf build/*
+
+windows:
+	make -f Makefile.windows
+
+remove-executable:
+	rm -rf $(EXECUTABLE)
