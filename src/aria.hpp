@@ -7,6 +7,8 @@
 #include "global_variables.hpp"
 #include "gtkmm/headerbar.h"
 #include <curl/curl.h>
+#include <nlohmann/json.hpp>
+#include <fstream>
 //Every 300 milliseconds, the progress bar will be updated. The progress bar would crash if done with less interval time
 //on my third gen Intel shitty laptop
 #define MINIMAL_PROGRESS_FUNCTIONALITY_INTERVAL 300000
@@ -196,4 +198,53 @@ inline void aria2Thread(Gtk::ProgressBar * progress_bar, std::string type, std::
     }
     progress_bar->set_fraction(0);
     global::lock = false;
+}
+inline void download_plugin_json()
+{
+    //Raw yaml url
+    std::string url = "https://raw.githubusercontent.com/EndlessSkyCommunity/endless-sky-plugins/master/generated/plugins.json";
+
+    //Download the yaml file
+    CURL *curl;
+    FILE *fp;
+    CURLcode res;
+    curl = curl_easy_init();
+    if (curl) 
+    {
+        fp = fopen("download/plugins.json","wb");
+        curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+        curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
+        //The write_data function will write the downloaded data to a file
+        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_data);
+        curl_easy_setopt(curl, CURLOPT_WRITEDATA, fp);
+        res = curl_easy_perform(curl);
+        /* always cleanup */
+        curl_easy_cleanup(curl);
+        fclose(fp);
+    }
+    nlohmann::json j;
+    std::ifstream i("download/plugins.json");
+    i >> j;
+    std::string plugin_name;
+    std::string plugin_version;
+    std::string plugin_url;
+    std::string plugin_description;
+    std::string plugin_author;
+    std::string plugin_homepage;
+    std::string plugin_license;
+    std::string plugin_short_description;
+    
+    for (auto& element : j)
+    {
+        plugin_name = element["name"];
+        plugin_version = element["version"];
+        plugin_url = element["url"];
+        plugin_description = element["description"];
+        plugin_short_description = element["shortDescription"];
+        plugin_license = element["license"];
+        plugin_author = element["authors"];
+        plugin_homepage = element["homepage"];
+        global::plugins.push_back({plugin_name, plugin_author, plugin_version, plugin_description, plugin_short_description, plugin_homepage, plugin_license, plugin_url});
+    }
+    
 }

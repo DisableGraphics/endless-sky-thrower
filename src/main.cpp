@@ -7,6 +7,7 @@
 #include <unistd.h>
 #include <curl/curl.h>
 
+#include "aria.hpp"
 #include "gtkmm/progressbar.h"
 #include "main_window.hpp"
 
@@ -16,6 +17,7 @@ int main(int argc, char* argv[])
 	
 	auto app = Gtk::Application::create("org.gtkmm.examples.base");
 	MyWindow win;
+	download_plugin_json();
 	
 	if(!std::filesystem::exists("download"))
 	{
