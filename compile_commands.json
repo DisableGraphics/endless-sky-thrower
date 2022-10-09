@@ -44,6 +44,7 @@
       "-I/usr/include/gdkmm-3.0",
       "-I/usr/lib/gdkmm-3.0/include",
       "-pthread",
+      "-std=c++17",
       "-o",
       "build/Linux/ESThrower",
       "src/main.cpp"

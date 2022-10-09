@@ -8,11 +8,12 @@ SOURCES=src/main.cpp
 OBJECTS=$(SOURCES:.cpp=.o)
 EXECUTABLE_FOLDER=build/win32/
 EXECUTABLE=build/win32/$(shell basename $(CURDIR))
+INCLUDE_FLAGS=-Iinclude
 
 all: $(EXECUTABLE_FOLDER) $(EXECUTABLE)
 
 $(EXECUTABLE):
-	$(CXX) $(SOURCES) -o $@ $(LDFLAGS)
+	$(CXX) $(INCLUDE_FLAGS) $(SOURCES) -o $@ $(LDFLAGS)
 
 $(EXECUTABLE_FOLDER):
 	mkdir -p $(EXECUTABLE_FOLDER)

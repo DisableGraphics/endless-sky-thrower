@@ -2,18 +2,22 @@
 #include <gtkmm.h>
 #include <iostream>
 #include "functions.hpp"
+#include "gtkmm/checkbutton.h"
+#include "gtkmm/enums.h"
 #include "gtkmm/hvbox.h"
 //Instance class, used to store the instance data. Inherits from Gtk::HBox
 class Instance : public Gtk::VBox
 {
   public:
     //Constructor. Sets the name, the type, the version and a pointer to the progress bar
-    Instance(std::string name, std::string _type, std::string _version, Gtk::ProgressBar * global_prog)
+    Instance(std::string name, std::string _type, std::string _version, Gtk::ProgressBar * global_prog, bool autoupdate, bool untouched)
     {
         type = _type;
         set_spacing(10);
         name_label.set_text(name);
         bool has_v{false};
+        this->autoupdate = autoupdate;
+        this->untouched = untouched;
         for (char & aux : _version)
         {
             if (aux == 'v')
@@ -58,6 +62,14 @@ class Instance : public Gtk::VBox
         {
             labels_box.pack_start(version_label);
         }
+        
+        untouched_label.set_label("Vanilla instance");
+        untouched_label.set_valign(Gtk::ALIGN_CENTER);
+        untouched_label.set_halign(Gtk::ALIGN_END);
+        if(untouched)
+        {
+            labels_box.pack_end(untouched_label);
+        }
 
         labels_box.pack_start(folder);
         folder.set_image_from_icon_name("folder-symbolic");
@@ -72,9 +84,25 @@ class Instance : public Gtk::VBox
 
         labels_box.pack_start(launch);
         launch.set_image_from_icon_name("media-playback-start");
-        launch.signal_clicked().connect(sigc::bind<std::string>(sigc::ptr_fun(&launch_game), get_name(), type, version));
+        launch.signal_clicked().connect(sigc::bind<std::string>(sigc::ptr_fun(&launch_game), get_name(), type, version, untouched));
         
         show_all();
+    }
+    void set_untouched(bool untouched)
+    {
+        this->untouched = untouched;
+    }
+    bool get_untouched()
+    {
+        return untouched;
+    }
+    void set_autoupdate(bool autoupdate)
+    {
+        this->autoupdate = autoupdate;
+    }
+    bool get_autoupdate()
+    {
+        return autoupdate;
     }
     //Returns the version
     std::string get_version()
@@ -107,6 +135,8 @@ class Instance : public Gtk::VBox
     
   private:
     std::string type;
+    bool autoupdate{false};
+    bool untouched{false};
     Gtk::Separator separator1, separator2;
     std::string version;
     Gtk::Label name_label;
@@ -115,5 +145,6 @@ class Instance : public Gtk::VBox
     Gtk::Button delete_button;
     Gtk::Button folder;
     Gtk::Button update;
+    Gtk::Label untouched_label;
     Gtk::HBox labels_box;
 };

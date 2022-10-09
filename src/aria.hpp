@@ -1,5 +1,8 @@
 #pragma once
+#include "gtkmm/enums.h"
+#include "gtkmm/label.h"
 #include "gtkmm/progressbar.h"
+#include <thread>
 #define CURL_STATICLIB
 #include <iostream>
 #include <gtkmm.h>
@@ -70,8 +73,18 @@ inline std::string instance_version_minus_v(std::string instance_version)
     return version;
 }
 //This is a thread used to: download the instance and update the progress bar
-inline void aria2Thread(Gtk::ProgressBar * progress_bar, std::string type, std::string instance_name, std::string instance_version)
+inline void aria2Thread(Gtk::ProgressBar * progress_bar, std::string type, std::string instance_name, std::string instance_version, bool different_naming_scheme = false)
 {
+    while(global::lock)
+    {
+        //Wait until the lock is released
+        std::chrono::milliseconds dura( 1000 );
+        std::this_thread::sleep_for(dura);
+    }
+    if(!global::lock)
+    {
+        global::lock = true;
+    }
     if(!std::filesystem::exists("download/" + instance_name))
     {
         std::filesystem::create_directory("download/" + instance_name);
@@ -89,6 +102,7 @@ inline void aria2Thread(Gtk::ProgressBar * progress_bar, std::string type, std::
         {
             strcpy(url, "https://github.com/endless-sky/endless-sky/releases/download/continuous/endless-sky-x86_64-continuous.AppImage");
         }
+
         else if(get_OS() == "Windows")
         {
             strcpy(url, "https://github.com/endless-sky/endless-sky/releases/download/continuous/EndlessSky-win64-continuous.zip");
@@ -98,7 +112,7 @@ inline void aria2Thread(Gtk::ProgressBar * progress_bar, std::string type, std::
             strcpy(url, "https://github.com/endless-sky/endless-sky/releases/download/continuous/EndlessSky-macOS-continuous.zip");
         }
     }
-    else if(type == "Stable")
+    else if(type == "Stable" && !different_naming_scheme)
     {
         if(get_OS() == "Linux")
         {
@@ -113,6 +127,17 @@ inline void aria2Thread(Gtk::ProgressBar * progress_bar, std::string type, std::
         else if(get_OS() == "Mac OS")
         {
             strcpy(url, ("https://github.com/endless-sky/endless-sky/releases/download/" + instance_version + "/endless-sky-macos-" + instance_version + ".zip").c_str());
+        }
+    }
+    else if(type == "Stable" && different_naming_scheme)
+    {
+        if(get_OS() == "Linux")
+        {
+            strcpy(url, ("https://github.com/endless-sky/endless-sky/releases/download/" + instance_version + "/endless-sky-x86_64-" + instance_version +".AppImage").c_str());
+        }
+        else if(get_OS() == "Windows")
+        {
+            strcpy(url, ("https://github.com/endless-sky/endless-sky/releases/download/" + instance_version + "/endless-sky-win64-" + instance_version + ".zip").c_str());
         }
     }
     std::string file_prefix;
@@ -162,42 +187,60 @@ inline void aria2Thread(Gtk::ProgressBar * progress_bar, std::string type, std::
         curl_easy_cleanup(curl);
         fclose(fp);
     }
-
-    double progress = 0;
-    int count{0};
-    for(;;) 
+    std::ifstream verification;
+    verification.open(outfilename);
+    std::string contents;
+    verification >> contents;
+    verification.close();
+    if(contents == "Not")
     {
-        count++;
+        std::cout << "[WARN] Download failed due to incorrect naming scheme. Retrying..." << std::endl;
+        //I need to redownload the file using another naming scheme
+        global::lock = false;
+        aria2Thread(progress_bar, type, instance_name, instance_version, true);
+
+    }
+    else
+    {
+        std::cout << "[INFO] Verified correctness of download. Proceeding with next operation." << std::endl;
+    }
+    if(!different_naming_scheme)
+    {
+        //Dialog to notify the user that the download is complete
+        Gtk::Dialog finished_downloading_dialog;
+        Gtk::VBox finished_downloading_vbox;
+        Gtk::HeaderBar finished_downloading_headerbar;
+
+        finished_downloading_headerbar.set_title("Finished Downloading");
+        finished_downloading_headerbar.set_show_close_button(true);
+        finished_downloading_dialog.set_titlebar(finished_downloading_headerbar);
+
+        finished_downloading_vbox.set_spacing(10);
+        finished_downloading_vbox.set_margin_top(10);
+        finished_downloading_vbox.set_margin_bottom(10);
+        finished_downloading_vbox.set_valign(Gtk::ALIGN_CENTER);
+        finished_downloading_vbox.set_halign(Gtk::ALIGN_CENTER);
         
-        if( count != 1) 
+        finished_downloading_dialog.get_action_area()->pack_start(finished_downloading_vbox);
+        Gtk::Label finished_downloading_label;
+        finished_downloading_label.set_valign(Gtk::ALIGN_CENTER);
+        finished_downloading_label.set_halign(Gtk::ALIGN_CENTER);
+        finished_downloading_label.set_justify(Gtk::JUSTIFY_CENTER);
+        finished_downloading_label.set_markup("Finished downloading instance <b>" + instance_name + "</b> of type <b>" + type + "</b>.\n\nYou can now close this window.");
+        finished_downloading_vbox.pack_start(finished_downloading_label);
+        
+        Gtk::Button b ("OK");
+        b.signal_clicked().connect([&finished_downloading_dialog](){finished_downloading_dialog.close();});
+        finished_downloading_vbox.pack_start(b);
+        finished_downloading_dialog.show_all();
+
+        if(finished_downloading_dialog.run() == Gtk::RESPONSE_OK)
         {
-            break;
+            finished_downloading_dialog.close();
         }
-
+        progress_bar->set_fraction(0);
+        global::lock = false;
     }
-    //Dialog to notify the user that the download is complete
-    Gtk::Dialog finished_downloading_dialog;
-    Gtk::VBox finished_downloading_vbox;
-    Gtk::HeaderBar finished_downloading_headerbar;
-
-    finished_downloading_headerbar.set_title("Finished Downloading");
-    finished_downloading_headerbar.set_show_close_button(true);
-    finished_downloading_dialog.set_titlebar(finished_downloading_headerbar);
-    
-    finished_downloading_dialog.get_action_area()->pack_start(finished_downloading_vbox);
-    finished_downloading_vbox.pack_start(*Gtk::manage(new Gtk::Label("Finished downloading " + type + " build.")));
-    
-    Gtk::Button b ("OK");
-    b.signal_clicked().connect([&finished_downloading_dialog](){finished_downloading_dialog.close();});
-    finished_downloading_vbox.pack_start(b);
-    finished_downloading_dialog.show_all();
-
-    if(finished_downloading_dialog.run() == Gtk::RESPONSE_OK)
-    {
-        finished_downloading_dialog.close();
-    }
-    progress_bar->set_fraction(0);
-    global::lock = false;
 }
 inline void download_plugin_json()
 {

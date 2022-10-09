@@ -26,7 +26,12 @@ int main(int argc, char* argv[])
 	Gtk::ProgressBar * global_prog = win.get_progress();
 	for(auto & p : read_instances(global_prog))
 	{
-		win.add_instance(p.get_name(), p.get_typee(), p.get_version());
+		win.add_instance(p.get_name(), p.get_typee(), p.get_version(), p.get_autoupdate(), p.get_untouched());
+		if(p.get_autoupdate() == true)
+		{
+			std::thread t{download, p.get_typee(), global_prog, p.get_name(),  p.get_version()};
+			t.detach();
+		}
 	}
 	win.show_all();
 

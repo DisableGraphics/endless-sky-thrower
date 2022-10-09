@@ -9,14 +9,20 @@
 #include "dialogs.hpp"
 #include "functions.hpp"
 #include "glibmm/refptr.h"
+#include "global_variables.hpp"
 #include "gtkmm/button.h"
 #include "gtkmm/dialog.h"
 #include "gtkmm/headerbar.h"
 #include "gtkmm/hvbox.h"
 #include "gtkmm/image.h"
 #include "gtkmm/label.h"
+#include "gtkmm/notebook.h"
 #include "gtkmm/progressbar.h"
+#include "gtkmm/scrolledwindow.h"
+#include "gtkmm/widget.h"
 #include "instance.hpp"
+#include "plugin_instance.hpp"
+
 //Removes the instance from the list of instances using its name
 inline void remove_instance(std::string name, std::vector<Instance> *instances, std::vector<Gtk::Button> *instance_buttons, Gtk::Window * window)
 {
@@ -70,34 +76,48 @@ inline std::string put_spaces(std::string str)
 //Saves the instances to the disk
 inline void save_instances(std::vector<Instance> * instances)
 {
-    std::ofstream file;
-    file.open("download/instances.txt");
+    nlohmann::json j;
     for (auto & p : *instances)
     {
-        file << put_circunflexes(p.get_name()) << " " << p.get_typee() << " " << put_circunflexes(p.get_version()) << std::endl;
+        j += nlohmann::json::object({
+            {"name", p.get_name()},
+            {"version", p.get_version()},
+            {"type", p.get_typee()},
+            {"vanilla", p.get_untouched()},
+            {"autoupdate", p.get_autoupdate()}
+        });
     }
+    std::ofstream file;
+    file.open("download/instances.json");
+    file << j.dump(4);
     file.close();
 }
 //Loads the instances from the disk
 inline std::vector<Instance> read_instances(Gtk::ProgressBar * global_prog)
 {
-    std::vector<Instance> ret;
+    std::vector<Instance> instances;
     std::ifstream file;
-    file.open("download/instances.txt");
-    std::string line;
-    while(std::getline(file, line))
+    file.open("download/instances.json");
+    if(file.is_open())
     {
-        bool foundit{false};
-        std::string name, type, version;
-        std::stringstream line_ss{line};
-        line_ss >> name >> type >> version;
-        name = put_spaces(name);
-        version = put_spaces(version); //The version is used for the custom builds as a filename instead of a version number. This is rather hackish, but... do we need to show a version number for an instance without it?
-        
-        ret.emplace_back(name, type, version, global_prog);
+        nlohmann::json j;
+        file >> j;
+        for (auto & p : j)
+        {
+            std::string name = p["name"];
+            std::string version = p["version"];
+            std::string type = p["type"];
+            bool autoupdate = p["autoupdate"];
+            bool untouched = p["vanilla"];
+            instances.push_back(Instance(name, type, version, global_prog, autoupdate, untouched));
+        }
+    }
+    else
+    {
+        std::cout << "[WARN] instances.json file not found. Resuming normal operation." << std::endl;
     }
     file.close();
-    return ret;
+    return instances;
 }
 //Fired when the window is closed. Saves the instances and closes the window.
 //Note the use of the 'deelete' word, since the on_delete_event is an already defined function in Gtk::Window
@@ -112,7 +132,7 @@ class MyWindow : public Gtk::Window
   public:
     MyWindow();
     //Adds an intance to the list of instances and shows it in the window
-    void add_instance(std::string name, std::string type, std::string version)
+    void add_instance(std::string name, std::string type, std::string version, bool autoupdate, bool untouched)
     {
         for (auto & p : instances)
         {
@@ -132,8 +152,10 @@ class MyWindow : public Gtk::Window
                 return;
             }
         }
-        instances.push_back(Instance(name, type, version, &progress));
-        Gtk::HBox *tmp = instances[instances.size()-1].get_labels_box();
+        instances.push_back(Instance(name, type, version, &progress, autoupdate, untouched));
+        instances.back().set_autoupdate(autoupdate);
+        instances.back().set_untouched(untouched);
+        auto * tmp = instances[instances.size() - 1].get_labels_box();
 
         instance_buttons.push_back(Gtk::Button());
         tmp->pack_start(instance_buttons[instance_buttons.size()-1]);
@@ -166,7 +188,26 @@ class MyWindow : public Gtk::Window
     Gtk::ProgressBar progress;
     Gtk::VBox m_vbox;
     Gtk::HeaderBar titlebar;    
+    Gtk::Notebook m_notebook;
+    Gtk::VBox m_plugins_vbox;
+    Gtk::ScrolledWindow m_plugins_scrolled_window;
+    bool generated_plugins{false};
+    
 };
+inline void on_switch_page(Gtk::Widget * page, guint number, Gtk::VBox * m_plugins_vbox, bool &generated_plugins)
+{
+    if(number == 1 && !generated_plugins)
+    {
+        for(auto & p : global::plugins)
+        {
+            //PluginInstance instance{p};
+            m_plugins_vbox->pack_start(*Gtk::manage(new PluginInstance(p)));
+        }
+        //m_plugins_vbox->pack_start(*Gtk::manage(new Gtk::Label("This is a placeholder for the plugins page.")));
+        m_plugins_vbox->show_all();
+        generated_plugins = true;
+    }
+}
 //Creates a new dialog for creating a new instance
 //Taking into account the pointer fuckery done here, I'm amazed this worked the first time I tried it.
 inline void new_dialog(MyWindow * window)
@@ -178,7 +219,7 @@ inline void new_dialog(MyWindow * window)
     switch(dialog.run())
     {
         case 1:
-            window->add_instance(dialog.get_naem(), dialog.get_typee(), dialog.get_version());
+            window->add_instance(dialog.get_naem(), dialog.get_typee(), dialog.get_version(), dialog.auto_update(), dialog.vanilla());
             break;
     }
 }
@@ -270,7 +311,9 @@ inline void open_data_folder()
 //The MyWindow constructor. Puts the widgets in place and connects the signals
 inline MyWindow::MyWindow()
 {
-    add(m_vbox);
+    add(m_notebook);
+    m_notebook.append_page(m_vbox, "Instances");
+    
     titlebar.pack_start(m_new_instance_button);
     titlebar.pack_start(m_open_data_folder_button);
     titlebar.pack_start(m_uninstall_all_button);
@@ -284,6 +327,13 @@ inline MyWindow::MyWindow()
     m_open_data_folder_button.signal_clicked().connect(sigc::ptr_fun(&open_data_folder));
     m_new_instance_button.signal_clicked().connect(sigc::bind(sigc::ptr_fun(new_dialog), this));
     m_uninstall_all_button.signal_clicked().connect(sigc::bind(sigc::ptr_fun(&uninstall_all), &progress, this));
+
+    m_notebook.append_page(m_plugins_scrolled_window, "Plugins");
+    m_plugins_scrolled_window.add(m_plugins_vbox);
+    
+    m_plugins_vbox.set_border_width(10);
+
+    m_notebook.signal_switch_page().connect(sigc::bind(sigc::ptr_fun(on_switch_page),&m_plugins_vbox, generated_plugins));
 
     set_titlebar(titlebar);
     titlebar.set_show_close_button();

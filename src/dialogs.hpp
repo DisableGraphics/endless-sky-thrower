@@ -1,4 +1,5 @@
 #pragma once
+#include "gtkmm/checkbutton.h"
 #include "gtkmm/hvbox.h"
 #include <gtkmm.h>
 #include <iostream>
@@ -33,6 +34,11 @@ class NewInstanceDialog : public Gtk::Dialog
         instance_type_combo.append("Continuous build");
         instance_type_combo.append("Custom instance");
         instance_type_combo.set_active(0);
+
+        autoupdate.set_label("Autoupdate");
+
+        get_content_area()->pack_start(untouched);
+        untouched.set_label("Vanilla (No plugins)");
             
         buttons_box.pack_start(cancel_button);
         
@@ -40,6 +46,14 @@ class NewInstanceDialog : public Gtk::Dialog
         instance_type_combo.signal_changed().connect(sigc::mem_fun(*this, &NewInstanceDialog::on_combo_changed));
         browse_button.signal_clicked().connect(sigc::mem_fun(*this, &NewInstanceDialog::on_browse_button_clicked));
         show_all();      
+    }
+    bool auto_update()
+    {
+        return autoupdate.get_active();
+    }
+    bool vanilla()
+    {
+        return untouched.get_active();
     }
     int get_selected()
     {
@@ -73,6 +87,7 @@ class NewInstanceDialog : public Gtk::Dialog
     Gtk::Entry version_entry;
     Gtk::ComboBoxText instance_type_combo;
     Gtk::HBox buttons_box;
+    Gtk::CheckButton autoupdate, untouched;
     //Exclusive for Custom instances
     Gtk::Button browse_button;
     Gtk::HBox entry_and_button;
@@ -104,6 +119,19 @@ class NewInstanceDialog : public Gtk::Dialog
                 break;
         }
     }
+    void remove_autoupdate_untouched()
+    {
+        get_content_area()->remove(autoupdate);
+        get_content_area()->remove(untouched);
+    }
+    void add_autoupdate_untouched(bool autoupdate_possible)
+    {
+        if(autoupdate_possible)
+        {
+            get_content_area()->pack_start(autoupdate);
+        }
+        get_content_area()->pack_start(untouched);
+    }
     
     void on_combo_changed()
     {
@@ -112,28 +140,37 @@ class NewInstanceDialog : public Gtk::Dialog
             get_content_area()->remove(buttons_box);
             get_content_area()->pack_start(version_entry);
             get_content_area()->pack_start(buttons_box);
+            
+            remove_autoupdate_untouched();
+
             get_content_area()->remove(browse_button);
             get_content_area()->remove(entry_and_button);
+
+            add_autoupdate_untouched(false);
             version_entry.set_placeholder_text("Version");
             resize(310 - 52, 1); //Resizes to the minimum size possible. Works as a workaround for the dialog not resizing properly.
             show_all();
         }
         else if(instance_type_combo.get_active_row_number() == 1)
         {
+            remove_autoupdate_untouched();
             get_content_area()->remove(version_entry);
             get_content_area()->remove(browse_button);
             get_content_area()->remove(entry_and_button);
+            add_autoupdate_untouched(true);
             resize(310 - 52, 1);
             show_all();
         }
         else if(instance_type_combo.get_active_row_number() == 2)
         {
+            remove_autoupdate_untouched();
             get_content_area()->remove(buttons_box);
             get_content_area()->remove(version_entry);
             get_content_area()->pack_start(entry_and_button);
-            entry_and_button.pack_start(version_entry);
-            entry_and_button.pack_start(browse_button);
+            get_content_area()->pack_start(version_entry);
+            get_content_area()->pack_start(browse_button);
             version_entry.set_placeholder_text("Path to the executable");
+            add_autoupdate_untouched(false);
             resize(310 - 52, 1);
             show_all();
         }

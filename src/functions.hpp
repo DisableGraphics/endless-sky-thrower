@@ -4,6 +4,8 @@
 #include <filesystem>
 #include "global_variables.hpp"
 #include "aria.hpp"
+#include "gtkmm/dialog.h"
+#include "main_window.hpp"
 #include <thread>
 #include <unistd.h>
 
@@ -22,9 +24,8 @@ inline std::string get_folder_for_filename(std::string filename)
 }
 
 inline void open_folder(std::string instance_name, std::string instance_type, std::string instance_version)
-
 {
-  	if(get_OS() == "Linux")
+	if(get_OS() == "Linux")
   	{
 		if(instance_type != "Custom")
 		{
@@ -38,7 +39,7 @@ inline void open_folder(std::string instance_name, std::string instance_type, st
 			system(command.c_str());
 		}
 	}
-  	else if(get_OS() == "Windows")
+	else if(get_OS() == "Windows")
 	{
 		if(instance_type != "Custom")
 		{
@@ -51,7 +52,7 @@ inline void open_folder(std::string instance_name, std::string instance_type, st
 			system(command.c_str());
 		}
 	}
-	else if(get_OS() == "MacOS")
+	else
 	{
 		if(instance_type != "Custom")
 		{
@@ -67,13 +68,33 @@ inline void open_folder(std::string instance_name, std::string instance_type, st
   
 }
 
-inline void launch_game(const std::string &instance_name, const std::string &instance_type, const std::string &instance_version)
+inline void launch_game(const std::string &instance_name, const std::string &instance_type, const std::string &instance_version, bool untouched)
 {
   #ifdef __linux__
   if(instance_type != "Custom")
   {
     if(std::filesystem::exists("download/" + instance_name))
     {
+		if(untouched)
+		{
+			std::string home_folder = std::getenv("HOME");
+			if(std::filesystem::exists(home_folder + "/.local/share/endless-sky/plugins") && !std::filesystem::exists(home_folder + "/.local/share/endless-sky/_plugins"))
+			{
+				std::filesystem::rename(home_folder + "/.local/share/endless-sky/plugins", home_folder + "/.local/share/endless-sky/_plugins");
+			}
+		}
+		else 
+		{
+			std::string home_folder = std::getenv("HOME");
+			if(std::filesystem::exists(home_folder + "/.local/share/endless-sky/_plugins"))
+			{
+				if(std::filesystem::exists(home_folder + "/.local/share/endless-sky/plugins"))
+				{
+					std::filesystem::remove_all(home_folder + "/.local/share/endless-sky/plugins");
+				}
+				std::filesystem::rename(home_folder + "/.local/share/endless-sky/_plugins", home_folder + "/.local/share/endless-sky/plugins");
+			}
+		}
         std::string command;
         std::string game_command;
 		
@@ -200,10 +221,10 @@ inline void launch_game(const std::string &instance_name, const std::string &ins
 }
 inline void download(const std::string &type, Gtk::ProgressBar * prog, const std::string &instance_name, const std::string &instance_version)
 {
-  if(!global::lock)
-  {
-    global::lock = true;
-    std::thread t(std::bind(aria2Thread, prog, type, instance_name, instance_version));
+  /*if(!global::lock)
+  {*/
+    //global::lock = true;
+    std::thread t(std::bind(aria2Thread, prog, type, instance_name, instance_version, false));
     t.detach();
-  }
+  //}
 }
