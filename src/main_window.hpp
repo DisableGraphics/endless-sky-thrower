@@ -93,7 +93,7 @@ inline void save_instances(std::vector<Instance> * instances)
     file.close();
 }
 //Loads the instances from the disk
-inline std::vector<Instance> read_instances(Gtk::ProgressBar * global_prog)
+inline std::vector<Instance> read_instances(Gtk::ProgressBar * global_prog, Gtk::Window * win)
 {
     std::vector<Instance> instances;
     std::ifstream file;
@@ -109,7 +109,7 @@ inline std::vector<Instance> read_instances(Gtk::ProgressBar * global_prog)
             std::string type = p["type"];
             bool autoupdate = p["autoupdate"];
             bool untouched = p["vanilla"];
-            instances.push_back(Instance(name, type, version, global_prog, autoupdate, untouched));
+            instances.push_back(Instance(name, type, version, global_prog, win, autoupdate, untouched));
         }
     }
     else
@@ -132,7 +132,7 @@ class MyWindow : public Gtk::Window
   public:
     MyWindow();
     //Adds an intance to the list of instances and shows it in the window
-    void add_instance(std::string name, std::string type, std::string version, bool autoupdate, bool untouched)
+    void add_instance(std::string name, std::string type, std::string version, Gtk::Window * win, bool autoupdate, bool untouched)
     {
         for (auto & p : instances)
         {
@@ -152,7 +152,7 @@ class MyWindow : public Gtk::Window
                 return;
             }
         }
-        instances.push_back(Instance(name, type, version, &progress, autoupdate, untouched));
+        instances.push_back(Instance(name, type, version, &progress, win, autoupdate, untouched));
         instances.back().set_autoupdate(autoupdate);
         instances.back().set_untouched(untouched);
         auto * tmp = instances[instances.size() - 1].get_labels_box();
@@ -219,7 +219,7 @@ inline void new_dialog(MyWindow * window)
     switch(dialog.run())
     {
         case 1:
-            window->add_instance(dialog.get_naem(), dialog.get_typee(), dialog.get_version(), dialog.auto_update(), dialog.vanilla());
+            window->add_instance(dialog.get_naem(), dialog.get_typee(), dialog.get_version(), window, dialog.auto_update(), dialog.vanilla());
             break;
     }
 }
@@ -267,7 +267,7 @@ inline void uninstall_all(Gtk::ProgressBar * progress, MyWindow * mywindow)
             {
                 Gtk::Main::iteration();
             }
-            std::vector<Instance> instances = read_instances(progress);
+            std::vector<Instance> instances = read_instances(progress, mywindow);
             for (auto & p : instances)
             {
                 remove_instance(p.get_name(), &instances, mywindow->get_instance_buttons(), mywindow);

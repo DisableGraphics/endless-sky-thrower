@@ -219,12 +219,12 @@ inline void launch_game(const std::string &instance_name, const std::string &ins
   #endif
   
 }
-inline void download(const std::string &type, Gtk::ProgressBar * prog, const std::string &instance_name, const std::string &instance_version)
+inline void download(const std::string &type, Gtk::ProgressBar * prog, Gtk::Window * win, const std::string &instance_name, const std::string &instance_version)
 {
   /*if(!global::lock)
   {*/
     //global::lock = true;
-    std::thread t(std::bind(aria2Thread, prog, type, instance_name, instance_version, false));
+    std::thread t(std::bind(aria2Thread, prog, type, instance_name, instance_version, win, false));
     t.detach();
   //}
 }

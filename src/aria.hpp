@@ -28,11 +28,16 @@ inline std::string get_OS()
         return "Other";
     #endif
 }
+typedef struct
+{
+    Gtk::ProgressBar *progress_bar;
+    Gtk::Window * window;
+} Tw;
 //Used internally for the xferinfo function
 struct myprogress {
   curl_off_t lastruntime; /* type depends on version, see above */
   CURL *curl;
-  Gtk::ProgressBar * progr;
+  Tw tw;
 };
 //Will write the downloaded data to a file
 inline size_t write_data(void *ptr, size_t size, size_t nmemb, FILE *stream) 
@@ -59,7 +64,10 @@ static int xferinfo(void *p,
         myp->lastruntime = curtime;
         if(dlnow != 0 && dltotal != 0)
         {
-            myp->progr->set_fraction((double)dlnow / (double)dltotal);
+            if(myp->tw.window->is_active())
+            {
+                myp->tw.progress_bar->set_fraction((double)dlnow / (double)dltotal);
+            }
         }
     }
     return 0;
@@ -73,7 +81,7 @@ inline std::string instance_version_minus_v(std::string instance_version)
     return version;
 }
 //This is a thread used to: download the instance and update the progress bar
-inline void aria2Thread(Gtk::ProgressBar * progress_bar, std::string type, std::string instance_name, std::string instance_version, bool different_naming_scheme = false)
+inline void aria2Thread(Gtk::ProgressBar * progress_bar, std::string type, std::string instance_name, std::string instance_version, Gtk::Window * window, bool different_naming_scheme = false)
 {
     while(global::lock)
     {
@@ -164,7 +172,8 @@ inline void aria2Thread(Gtk::ProgressBar * progress_bar, std::string type, std::
     {
         prog.lastruntime = 0;
         prog.curl = curl;
-        prog.progr = progress_bar;
+        prog.tw.window = window;
+        prog.tw.progress_bar = progress_bar;
         fp = fopen(outfilename,"wb");
         curl_easy_setopt(curl, CURLOPT_URL, url);
         curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
@@ -197,7 +206,7 @@ inline void aria2Thread(Gtk::ProgressBar * progress_bar, std::string type, std::
         std::cout << "[WARN] Download failed due to incorrect naming scheme. Retrying..." << std::endl;
         //I need to redownload the file using another naming scheme
         global::lock = false;
-        aria2Thread(progress_bar, type, instance_name, instance_version, true);
+        aria2Thread(progress_bar, type, instance_name, instance_version, window, true);
 
     }
     else
@@ -237,6 +246,11 @@ inline void aria2Thread(Gtk::ProgressBar * progress_bar, std::string type, std::
         if(finished_downloading_dialog.run() == Gtk::RESPONSE_OK)
         {
             finished_downloading_dialog.close();
+        }
+        while(!window->is_visible())
+        {
+            //Wait for the window to be visible
+            sleep(1);
         }
         progress_bar->set_fraction(0);
         global::lock = false;

@@ -9,6 +9,7 @@
 
 #include "aria.hpp"
 #include "gtkmm/progressbar.h"
+#include "gtkmm/window.h"
 #include "main_window.hpp"
 
 int main(int argc, char* argv[])
@@ -24,12 +25,13 @@ int main(int argc, char* argv[])
 		std::filesystem::create_directory("download");
 	}
 	Gtk::ProgressBar * global_prog = win.get_progress();
-	for(auto & p : read_instances(global_prog))
+	Gtk::Window * window = &win;
+	for(auto & p : read_instances(global_prog, window))
 	{
-		win.add_instance(p.get_name(), p.get_typee(), p.get_version(), p.get_autoupdate(), p.get_untouched());
+		win.add_instance(p.get_name(), p.get_typee(), p.get_version(), window, p.get_autoupdate(), p.get_untouched());
 		if(p.get_autoupdate() == true)
 		{
-			std::thread t{download, p.get_typee(), global_prog, p.get_name(),  p.get_version()};
+			std::thread t(std::bind(download, p.get_typee(), global_prog, window, p.get_name(),  p.get_version()));
 			t.detach();
 		}
 	}
