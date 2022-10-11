@@ -232,7 +232,7 @@ inline void aria2Thread(Gtk::ProgressBar * progress_bar, std::string type, std::
         
         finished_downloading_dialog.get_action_area()->pack_start(finished_downloading_vbox);
         Gtk::Label finished_downloading_label;
-        finished_downloading_label.set_valign(Gtk::ALIGN_CENTER);
+        finished_downloading_label.set_valign(Gtk::ALIGN_CENTER); 
         finished_downloading_label.set_halign(Gtk::ALIGN_CENTER);
         finished_downloading_label.set_justify(Gtk::JUSTIFY_CENTER);
         finished_downloading_label.set_markup("Finished downloading instance <b>" + instance_name + "</b> of type <b>" + type + "</b>.\n\nYou can now close this window.");
@@ -243,17 +243,16 @@ inline void aria2Thread(Gtk::ProgressBar * progress_bar, std::string type, std::
         finished_downloading_vbox.pack_start(b);
         finished_downloading_dialog.show_all();
 
-        if(finished_downloading_dialog.run() == Gtk::RESPONSE_OK)
-        {
-            finished_downloading_dialog.close();
-        }
-        while(!window->is_visible())
+        finished_downloading_dialog.run();
+        
+        global::lock = false;
+        while(!window->is_active())
         {
             //Wait for the window to be visible
             sleep(1);
         }
         progress_bar->set_fraction(0);
-        global::lock = false;
+        
     }
 }
 inline void download_plugin_json()
