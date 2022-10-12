@@ -133,8 +133,8 @@ class MyWindow : public Gtk::Window
         instance_buttons.push_back(Gtk::Button());
         tmp->pack_start(instance_buttons[instance_buttons.size()-1]);
         instance_buttons[instance_buttons.size() -1].set_image_from_icon_name("user-trash-symbolic");
-        instance_buttons[instance_buttons.size()-1].signal_clicked().connect(sigc::bind(sigc::ptr_fun(&remove_instance), instances[instances.size()-1].get_name(), &instances, &instance_buttons, this));
-        this->signal_delete_event().connect(sigc::bind(sigc::ptr_fun(&on_deelete_event),  &instances));
+        instance_buttons[instance_buttons.size()-1].signal_clicked().connect(sigc::bind(sigc::ptr_fun(&remove_instance), instances[instances.size()-1].get_name(), &instances, &instance_buttons, (Gtk::Window *)this));
+        //this->signal_delete_event().connect(sigc::bind(sigc::ptr_fun(&on_deelete_event),  &instances));
 
         instances[instances.size() - 1].show_all();
         m_vbox.pack_start(instances[instances.size() - 1]);
@@ -242,7 +242,7 @@ inline MyWindow::MyWindow()
     m_plugins_vbox.set_border_width(10);
 
     m_notebook.signal_switch_page().connect(sigc::bind(sigc::ptr_fun(on_switch_page),&m_plugins_vbox, generated_plugins));
-
+    this->signal_delete_event().connect(sigc::bind(sigc::ptr_fun(&on_deelete_event),  &instances));
     set_titlebar(titlebar);
     titlebar.set_show_close_button();
     set_title("ESThrower");

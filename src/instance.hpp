@@ -83,7 +83,6 @@ class Instance : public Gtk::VBox
         }
         update.set_image_from_icon_name("go-down");
         update.signal_clicked().connect(sigc::bind<std::string>(sigc::ptr_fun(&download), type, global_prog, window, get_name(), get_version()));
-
         labels_box.pack_start(launch);
         launch.set_image_from_icon_name("media-playback-start");
         launch.signal_clicked().connect(sigc::bind<std::string>(sigc::ptr_fun(&launch_game), get_name(), type, version, untouched));
