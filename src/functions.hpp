@@ -9,6 +9,35 @@
 #include <thread>
 #include <unistd.h>
 
+inline bool is_plugin_installed(const std::string &plugin_name)
+{
+	// = "/usr/share/aria/plugins/" + plugin_name;
+	std::string os = get_OS();
+	std::string plugin_folder;
+
+	if(os == "Linux")
+	{
+		plugin_folder = std::getenv("HOME") + std::string("/.local/share/endless-sky/plugins/") + plugin_name;
+	}
+	else if(os == "Windows")
+	{
+		plugin_folder = std::getenv("APPDATA") + std::string("/endless-sky/plugins/") + plugin_name;
+	}
+	else if(os == "MacOS")
+	{
+		plugin_folder = std::getenv("HOME") + std::string("/Library/Application Support/endless-sky/plugins/") + plugin_name;
+	}
+
+	if (std::filesystem::exists(plugin_folder))
+	{
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+
 inline std::string get_folder_for_filename(std::string filename)
 {
 	std::string folder;

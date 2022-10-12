@@ -39,43 +39,16 @@ inline void remove_instance(std::string name, std::vector<Instance> *instances, 
     }
     
 }
-//Adds the '^' symbol, used as a separator for the spaces in the instance name in the file, since the ifstream is a pain in the @$$
-inline std::string put_circunflexes(std::string str)
-{
-    std::string new_str;
-    for (int i{0}; i < str.size(); i++)
-    {
-        if(str[i] == ' ')
-        {
-            new_str += '^';
-        }
-        else
-        {
-            new_str += str[i];
-        }
-    }
-    return new_str;
-}
-//Removes the '^' symbol, used as a separator for the spaces in the instance name in the file, since the ifstream is a pain in the @$$
-inline std::string put_spaces(std::string str)
-{
-    std::string new_str;
-    for(int i{0}; i < str.size(); i++)
-    {
-        if(str[i] == '^')
-        {
-            new_str += ' ';
-        }
-        else
-        {
-            new_str += str[i];
-        }
-    }
-    return new_str;
-}
-//Saves the instances to the disk
+//Saves the instances to the disk as JSON objects
 inline void save_instances(std::vector<Instance> * instances)
 {
+    if(instances->size() == 0)
+    {
+        std::ofstream file("instances.json");
+        file << "[]";
+        file.close();
+        return;
+    }
     nlohmann::json j;
     for (auto & p : *instances)
     {
@@ -184,7 +157,7 @@ class MyWindow : public Gtk::Window
   private:
     std::vector<Gtk::Button> instance_buttons;
     std::vector<Instance> instances;
-    Gtk::Button m_new_instance_button, m_open_data_folder_button, m_uninstall_all_button;
+    Gtk::Button m_new_instance_button, m_open_data_folder_button;
     Gtk::ProgressBar progress;
     Gtk::VBox m_vbox;
     Gtk::HeaderBar titlebar;    
@@ -194,16 +167,21 @@ class MyWindow : public Gtk::Window
     bool generated_plugins{false};
     
 };
+//Generates the plugins page, so it doesn't have to be generated at the first run, slowing down the initial load
 inline void on_switch_page(Gtk::Widget * page, guint number, Gtk::VBox * m_plugins_vbox, bool &generated_plugins)
 {
     if(number == 1 && !generated_plugins)
     {
+        
         for(auto & p : global::plugins)
         {
-            //PluginInstance instance{p};
-            m_plugins_vbox->pack_start(*Gtk::manage(new PluginInstance(p)));
+            bool is_installed = is_plugin_installed(p.name);
+            if(is_installed)
+            {
+                std::cout << "[INFO] Plugin " << p.name << " is installed." << std::endl;
+            }
+            m_plugins_vbox->pack_start(*Gtk::manage(new PluginInstance(p, is_installed)));
         }
-        //m_plugins_vbox->pack_start(*Gtk::manage(new Gtk::Label("This is a placeholder for the plugins page.")));
         m_plugins_vbox->show_all();
         generated_plugins = true;
     }
@@ -223,90 +201,23 @@ inline void new_dialog(MyWindow * window)
             break;
     }
 }
-//Removes all instances and the .local/share/endless-sky folder
-inline void uninstall_all(Gtk::ProgressBar * progress, MyWindow * mywindow)
-{
-    Gtk::Dialog warn;
-    Gtk::HeaderBar titlebar;
-
-    titlebar.set_show_close_button();
-    warn.set_titlebar(titlebar);
-    titlebar.set_title("Warning");
-    Gtk::Image *image = Gtk::manage(new Gtk::Image());
-    image->set_from_icon_name("dialog-warning", Gtk::ICON_SIZE_DIALOG);
-    Gtk::VBox *warn_vbox = Gtk::manage(new Gtk::VBox());
-    warn_vbox->pack_start(*image);
-    warn.get_action_area()->pack_start(*warn_vbox);
-    warn_vbox->pack_start(*Gtk::manage(new Gtk::Label("Are you sure you want to uninstall all instances?\nThis will delete all instances and the .local/share/endless-sky folder.\nThis action cannot be undone.")));
-    warn_vbox->get_children()[1]->set_margin_top(10);
-    warn_vbox->get_children()[1]->set_margin_bottom(10);
-    warn_vbox->get_children()[1]->set_margin_left(10);
-    warn_vbox->get_children()[1]->set_margin_right(10);
-    warn_vbox->get_children()[1]->set_halign(Gtk::ALIGN_CENTER);
-    
-    Gtk::Button * cancel = warn.add_button("Cancel", 1);
-    Gtk::Button * uninstall = warn.add_button("Uninstall", 2);
-    warn.get_action_area()->remove(*cancel);
-    warn.get_action_area()->remove(*uninstall);
-
-    warn_vbox->pack_start(*cancel);
-    warn_vbox->pack_start(*uninstall);
-
-    warn.show_all();
-    switch(warn.run())
-    {
-        case 1:
-            warn.close();
-            break;
-        case 2:
-            warn.close();
-            progress->set_fraction(0);
-            progress->set_text("Uninstalling...");
-            progress->show();
-            while(Gtk::Main::events_pending())
-            {
-                Gtk::Main::iteration();
-            }
-            std::vector<Instance> instances = read_instances(progress, mywindow);
-            for (auto & p : instances)
-            {
-                remove_instance(p.get_name(), &instances, mywindow->get_instance_buttons(), mywindow);
-            }
-            
-            std::string command = "rm -rf ~/.local/share/endless-sky";
-            if(get_OS() == "Windows")
-            {
-                command = "rmdir /s /q %APPDATA%\\.local\\share\\endless-sky";
-            }
-            else if(get_OS() == "MacOS")
-            {
-                command = "rm -rf ~/Library/Application\\ Support/endless-sky";
-            }
-            system(command.c_str());
-            progress->set_fraction(0);
-            progress->set_text("Done!");
-            break;
-    }
-    mywindow->show_all();
-}
 //Opens the data folder in the file manager
 inline void open_data_folder()
 {
+    std::string command;
     if(get_OS() == "Linux")
     {
-        std::string command = "xdg-open " + std::string(getenv("HOME")) + "/.local/share/endless-sky/";
-        system(command.c_str());
+        command = "xdg-open " + std::string(getenv("HOME")) + "/.local/share/endless-sky/";
     }
     else if(get_OS() == "Windows")
     {
-        std::string command = "explorer " + std::string(getenv("APPDATA")) + "\\endless-sky\\";
-        system(command.c_str());
+        command = "explorer " + std::string(getenv("APPDATA")) + "\\endless-sky\\";
     }
     else if(get_OS() == "MacOS")
     {
-        std::string command = "open " + std::string(getenv("HOME")) + "/Library/Application Support/endless-sky/";
-        system(command.c_str());
-    }
+        command = "open " + std::string(getenv("HOME")) + "/Library/Application Support/endless-sky/";
+   }
+    system(command.c_str());
 }
 //The MyWindow constructor. Puts the widgets in place and connects the signals
 inline MyWindow::MyWindow()
@@ -316,17 +227,14 @@ inline MyWindow::MyWindow()
     
     titlebar.pack_start(m_new_instance_button);
     titlebar.pack_start(m_open_data_folder_button);
-    titlebar.pack_start(m_uninstall_all_button);
     m_open_data_folder_button.set_image_from_icon_name("folder-symbolic");
     m_new_instance_button.set_image_from_icon_name("document-new");
-    m_uninstall_all_button.set_image_from_icon_name("user-trash-symbolic");
     m_vbox.set_border_width(10);
     m_vbox.set_spacing(10);
     m_vbox.set_valign(Gtk::ALIGN_START);
     m_vbox.pack_start(progress);
     m_open_data_folder_button.signal_clicked().connect(sigc::ptr_fun(&open_data_folder));
     m_new_instance_button.signal_clicked().connect(sigc::bind(sigc::ptr_fun(new_dialog), this));
-    m_uninstall_all_button.signal_clicked().connect(sigc::bind(sigc::ptr_fun(&uninstall_all), &progress, this));
 
     m_notebook.append_page(m_plugins_scrolled_window, "Plugins");
     m_plugins_scrolled_window.add(m_plugins_vbox);

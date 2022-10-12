@@ -21,7 +21,7 @@ inline std::string get_OS()
     #ifdef _WIN32
         return "Windows";
     #elif __APPLE__ || __MACH__
-        return "Mac OSX";
+        return "MacOS";
     #elif __linux__
         return "Linux";
     #else
@@ -103,62 +103,53 @@ inline void aria2Thread(Gtk::ProgressBar * progress_bar, std::string type, std::
     CURLcode res;
     struct myprogress prog;
 
-    char url[4096];
+    std::string url;
+
+    std::string os = get_OS();
+    url = "https://github.com/endless-sky/endless-sky/releases/download/";
+
+    std::string instance_v = instance_version;
+    bool upper_case = false;
     if(type == "Continuous")
     {
-        if(get_OS() == "Linux")
-        {
-            strcpy(url, "https://github.com/endless-sky/endless-sky/releases/download/continuous/endless-sky-x86_64-continuous.AppImage");
-        }
-
-        else if(get_OS() == "Windows")
-        {
-            strcpy(url, "https://github.com/endless-sky/endless-sky/releases/download/continuous/EndlessSky-win64-continuous.zip");
-        }
-        else if(get_OS() == "Mac OSX")
-        {
-            strcpy(url, "https://github.com/endless-sky/endless-sky/releases/download/continuous/EndlessSky-macOS-continuous.zip");
-        }
-    }
-    else if(type == "Stable" && !different_naming_scheme)
-    {
-        if(get_OS() == "Linux")
-        {
-            strcpy(url, ("https://github.com/endless-sky/endless-sky/releases/download/" + instance_version + "/endless-sky-amd64-" + instance_version + ".AppImage").c_str());
-        }
-        else if(get_OS() == "Windows")
-        {
-            //<irony>Courtesy of the great naming scheme of the endless sky developers!</irony> 
-            //(Yes, I'm fluent in HTML but who doesn't at this point in time)
-            strcpy(url, ("https://github.com/endless-sky/endless-sky/releases/download/" + instance_version + "/endless-sky-win64-" + instance_version_minus_v(instance_version) + ".zip").c_str());
-        }
-        else if(get_OS() == "Mac OS")
-        {
-            strcpy(url, ("https://github.com/endless-sky/endless-sky/releases/download/" + instance_version + "/endless-sky-macos-" + instance_version + ".zip").c_str());
-        }
-    }
-    else if(type == "Stable" && different_naming_scheme)
-    {
-        if(get_OS() == "Linux")
-        {
-            strcpy(url, ("https://github.com/endless-sky/endless-sky/releases/download/" + instance_version + "/endless-sky-x86_64-" + instance_version +".AppImage").c_str());
-        }
-        else if(get_OS() == "Windows")
-        {
-            strcpy(url, ("https://github.com/endless-sky/endless-sky/releases/download/" + instance_version + "/endless-sky-win64-" + instance_version + ".zip").c_str());
-        }
+        instance_v = "continuous";
+        upper_case = true;
+        
+        different_naming_scheme = true;
+        
     }
     std::string file_prefix;
-    if(get_OS() == "Linux")
+    if(os == "Linux")
     {
+        if(different_naming_scheme)
+        {
+            url += instance_v + "/endless-sky-x86_64-" + instance_v +".AppImage";
+        }
+        else 
+        {
+            url += instance_v + "/endless-sky-amd64-" + instance_v + ".AppImage";
+        }
         file_prefix = "endless-sky.AppImage";
     }
-    else if(get_OS() == "Windows")
+    else if(os == "Windows")
     {
+        std::string es{upper_case? "EndlessSky" : "endless-sky"};
+        
+        if(different_naming_scheme)
+        {
+            url += instance_v + "/" + es + "-win64-" + instance_v + ".zip";
+        }
+        else 
+        {
+            url += instance_v + "/" + es + "-win64-" + instance_version_minus_v(instance_v) + ".zip";
+        }
         file_prefix = "EndlessSky-win64.zip";
     }
-    else if(get_OS() == "Mac OS")
+    else //MacOS
     {
+        std::string es{upper_case? "EndlessSky" : "endless-sky"};
+    
+        url += instance_v + "/" + es + "-macos-" + instance_v + ".zip";
         file_prefix = "EndlessSky-macos.zip";
     }
     
@@ -175,7 +166,7 @@ inline void aria2Thread(Gtk::ProgressBar * progress_bar, std::string type, std::
         prog.tw.window = window;
         prog.tw.progress_bar = progress_bar;
         fp = fopen(outfilename,"wb");
-        curl_easy_setopt(curl, CURLOPT_URL, url);
+        curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
         curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
         //The write_data function will write the downloaded data to a file
         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_data);
@@ -207,13 +198,14 @@ inline void aria2Thread(Gtk::ProgressBar * progress_bar, std::string type, std::
         //I need to redownload the file using another naming scheme
         global::lock = false;
         aria2Thread(progress_bar, type, instance_name, instance_version, window, true);
-
     }
     else
     {
         std::cout << "[INFO] Verified correctness of download. Proceeding with next operation." << std::endl;
     }
-    if(!different_naming_scheme)
+    //Note: Since continuous may have a different naming scheme, this needs to fire if the instance is continuous
+    //Also: The naming scheme of continuous versions is regular, so I don't need to worry about misfires
+    if(!different_naming_scheme || type == "Continuous")
     {
         //Dialog to notify the user that the download is complete
         Gtk::Dialog finished_downloading_dialog;
@@ -238,12 +230,28 @@ inline void aria2Thread(Gtk::ProgressBar * progress_bar, std::string type, std::
         finished_downloading_label.set_markup("Finished downloading instance <b>" + instance_name + "</b> of type <b>" + type + "</b>.\n\nYou can now close this window.");
         finished_downloading_vbox.pack_start(finished_downloading_label);
         
-        Gtk::Button b ("OK");
-        b.signal_clicked().connect([&finished_downloading_dialog](){finished_downloading_dialog.close();});
-        finished_downloading_vbox.pack_start(b);
+        Gtk::Button * finished_downloading_button = finished_downloading_dialog.add_button("Close", Gtk::RESPONSE_OK);
+        finished_downloading_button->set_resize_mode(Gtk::RESIZE_PARENT);
+        finished_downloading_button->get_parent()->remove(*finished_downloading_button);
+        finished_downloading_vbox.pack_start(*finished_downloading_button);
+        finished_downloading_vbox.set_hexpand();
+        finished_downloading_vbox.set_halign(Gtk::ALIGN_CENTER);
+
         finished_downloading_dialog.show_all();
 
-        finished_downloading_dialog.run();
+        switch(finished_downloading_dialog.run())
+        {
+            case(Gtk::RESPONSE_OK):
+            {
+                finished_downloading_dialog.close();
+                break;
+            }
+            default:
+            {
+                finished_downloading_dialog.close();
+                break;
+            }
+        }
         
         global::lock = false;
         while(!window->is_active())
@@ -257,10 +265,10 @@ inline void aria2Thread(Gtk::ProgressBar * progress_bar, std::string type, std::
 }
 inline void download_plugin_json()
 {
-    //Raw yaml url
+    //Raw json url
     std::string url = "https://raw.githubusercontent.com/EndlessSkyCommunity/endless-sky-plugins/master/generated/plugins.json";
 
-    //Download the yaml file
+    //Download the json file
     CURL *curl;
     FILE *fp;
     CURLcode res;
@@ -290,6 +298,7 @@ inline void download_plugin_json()
     std::string plugin_license;
     std::string plugin_short_description;
     
+    //Populate the plugins vector
     for (auto& element : j)
     {
         plugin_name = element["name"];
