@@ -3,6 +3,17 @@ Endless Sky Launcher made with GTK
 
 The name is a joke, since it's a, you know, _launcher_
 
+# Features
+- Multiple installations
+    - Continuous builds (Fresh from the releases section)
+    - Stable builds (If you don't want to install a potentially unstable release)
+    - Custom builds (Just point to the executable and voilà)
+- These installations can have optional requirements:
+    - Vanilla (Won't get polluted with plugins)
+    - Autoupdate (Only available for Continuous instances, automatically downloads the build)
+
+- Plugin installer and uninstaller
+
 # Dependencies
 This program requires: 
 - Arch: ```sudo pacman -S curl gtkmm3```
