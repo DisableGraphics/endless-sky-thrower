@@ -208,6 +208,8 @@ inline void aria2Thread(Gtk::ProgressBar * progress_bar, std::string type, std::
     if(!different_naming_scheme || type == "Continuous")
     {
         //Dialog to notify the user that the download is complete
+        //This dialog bugs on windows, so I'm disabling it for now
+        #ifndef _WIN32
         Gtk::Dialog finished_downloading_dialog;
         Gtk::VBox finished_downloading_vbox;
         Gtk::HeaderBar finished_downloading_headerbar;
@@ -252,7 +254,7 @@ inline void aria2Thread(Gtk::ProgressBar * progress_bar, std::string type, std::
                 break;
             }
         }
-        
+        #endif
         global::lock = false;
         while(!window->is_active())
         {
