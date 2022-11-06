@@ -14,10 +14,12 @@ The name is a joke, since it's a, you know, _launcher_
 
 - Plugin installer and uninstaller
 
-# Dependencies
-This program requires: 
+# Compilation
+Install the dependencies: 
 - Arch: ```sudo pacman -S curl gtkmm3```
 - Ubuntu/Debian: ```sudo apt install libgkmm-3.0-dev curl```
+
+Then, just run ```make```
 # Support
 This application downloads and installs endless sky instances for you. Moreover, you can add custom instances that are already downloaded on your disk (For example: a PR, a content update...).
 # Wanted:
