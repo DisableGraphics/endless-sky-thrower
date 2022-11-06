@@ -263,6 +263,8 @@ inline void aria2Thread(Gtk::ProgressBar * progress_bar, std::string type, std::
         
     }
 }
+
+//Downloads and populates the list of plugins
 inline void download_plugin_json()
 {
     //Raw json url
@@ -309,6 +311,8 @@ inline void download_plugin_json()
         plugin_license = element["license"];
         plugin_author = element["authors"];
         plugin_homepage = element["homepage"];
+    
+        std::cout << "[INFO] Downloading plugin " << plugin_name << "..." << std::endl;
         global::plugins.push_back({plugin_name, plugin_author, plugin_version, plugin_description, plugin_short_description, plugin_homepage, plugin_license, plugin_url});
     }
     

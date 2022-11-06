@@ -6,6 +6,8 @@
 #include "gtkmm/enums.h"
 #include "gtkmm/hvbox.h"
 #include "gtkmm/window.h"
+#include "sigc++/functors/mem_fun.h"
+#include "sigc++/functors/ptr_fun.h"
 //Instance class, used to store the instance data. Inherits from Gtk::HBox
 class Instance : public Gtk::VBox
 {
@@ -13,6 +15,7 @@ class Instance : public Gtk::VBox
     //Constructor. Sets the name, the type, the version and a pointer to the progress bar
     Instance(std::string name, std::string _type, std::string _version, Gtk::ProgressBar * global_prog, Gtk::Window * win, bool autoupdate, bool untouched)
     {
+        this->global_prog = global_prog;
         window = win;
         type = _type;
         set_spacing(10);
@@ -82,7 +85,7 @@ class Instance : public Gtk::VBox
             labels_box.pack_start(update);
         }
         update.set_image_from_icon_name("go-down");
-        update.signal_clicked().connect(sigc::bind<std::string>(sigc::ptr_fun(&download), type, global_prog, window, get_name(), get_version()));
+        update.signal_clicked().connect(sigc::mem_fun(*this, &Instance::download));
         labels_box.pack_start(launch);
         launch.set_image_from_icon_name("media-playback-start");
         launch.signal_clicked().connect(sigc::bind<std::string>(sigc::ptr_fun(&launch_game), get_name(), type, version, untouched));
@@ -133,9 +136,15 @@ class Instance : public Gtk::VBox
             std::filesystem::remove_all("download/" + get_name());
         }
     }
+    void download()
+    {
+        std::thread t(std::bind(aria2Thread, global_prog, get_typee(), get_name(), get_version(), window, false));
+        t.detach();
+    }
     
   private:
     Gtk::Window * window;
+    Gtk::ProgressBar * global_prog;
     std::string type;
     bool autoupdate{false};
     bool untouched{false};

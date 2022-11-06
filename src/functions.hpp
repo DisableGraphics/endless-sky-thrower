@@ -5,9 +5,33 @@
 #include "global_variables.hpp"
 #include "aria.hpp"
 #include "gtkmm/dialog.h"
-#include "main_window.hpp"
 #include <thread>
 #include <unistd.h>
+
+inline std::string get_first_folder(std::string folder)
+{
+    std::string first_folder;
+    std::filesystem::directory_iterator it(folder);
+    for (const auto &entry : it)
+    {
+        if (entry.is_directory())
+        {
+            first_folder = entry.path().string();
+            break;
+        }
+    }
+    return first_folder;
+}
+
+inline int get_number_of_files_in_folder(std::string folder)
+{
+    int number_of_files = 0;
+    for (const auto & entry : std::filesystem::directory_iterator(folder))
+    {
+        number_of_files++;
+    }
+    return number_of_files;
+}
 
 inline bool is_plugin_installed(const std::string &plugin_name)
 {
@@ -255,13 +279,4 @@ inline void launch_game(const std::string &instance_name, const std::string &ins
 				break;
 		}
 	}
-}
-inline void download(const std::string &type, Gtk::ProgressBar * prog, Gtk::Window * win, const std::string &instance_name, const std::string &instance_version)
-{
-  /*if(!global::lock)
-  {*/
-    //global::lock = true;
-    std::thread t(std::bind(aria2Thread, prog, type, instance_name, instance_version, win, false));
-    t.detach();
-  //}
 }

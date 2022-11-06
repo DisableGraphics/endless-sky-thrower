@@ -31,8 +31,7 @@ int main(int argc, char* argv[])
 		win.add_instance(p.get_name(), p.get_typee(), p.get_version(), window, p.get_autoupdate(), p.get_untouched());
 		if(p.get_autoupdate() == true)
 		{
-			std::thread t(std::bind(download, p.get_typee(), global_prog, window, p.get_name(),  p.get_version()));
-			t.detach();
+			p.download();
 		}
 	}
 	win.show_all();

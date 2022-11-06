@@ -22,6 +22,8 @@
 #include "gtkmm/widget.h"
 #include "instance.hpp"
 #include "plugin_instance.hpp"
+#include "functions.hpp"
+#include "icon/esthrower.xpm"
 
 //Removes the instance from the list of instances using its name
 inline void remove_instance(std::string name, std::vector<Instance> *instances, std::vector<Gtk::Button> *instance_buttons, Gtk::Window * window)
@@ -134,7 +136,6 @@ class MyWindow : public Gtk::Window
         tmp->pack_start(instance_buttons[instance_buttons.size()-1]);
         instance_buttons[instance_buttons.size() -1].set_image_from_icon_name("user-trash-symbolic");
         instance_buttons[instance_buttons.size()-1].signal_clicked().connect(sigc::bind(sigc::ptr_fun(&remove_instance), instances[instances.size()-1].get_name(), &instances, &instance_buttons, (Gtk::Window *)this));
-        //this->signal_delete_event().connect(sigc::bind(sigc::ptr_fun(&on_deelete_event),  &instances));
 
         instances[instances.size() - 1].show_all();
         m_vbox.pack_start(instances[instances.size() - 1]);
@@ -224,6 +225,10 @@ inline MyWindow::MyWindow()
 {
     add(m_notebook);
     m_notebook.append_page(m_vbox, "Instances");
+
+    //Set the icon
+    auto p = Gdk::Pixbuf::create_from_xpm_data(esthrower);
+    set_icon(p);
     
     titlebar.pack_start(m_new_instance_button);
     titlebar.pack_start(m_open_data_folder_button);

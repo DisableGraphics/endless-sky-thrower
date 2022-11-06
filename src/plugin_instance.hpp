@@ -12,31 +12,7 @@
 #include "gtkmm/separator.h"
 #include <system_error>
 #include <thread>
-
-inline std::string get_first_folder(std::string folder)
-{
-    std::string first_folder;
-    std::filesystem::directory_iterator it(folder);
-    for (const auto &entry : it)
-    {
-        if (entry.is_directory())
-        {
-            first_folder = entry.path().string();
-            break;
-        }
-    }
-    return first_folder;
-}
-
-inline int get_number_of_files_in_folder(std::string folder)
-{
-    int number_of_files = 0;
-    for (const auto & entry : std::filesystem::directory_iterator(folder))
-    {
-        number_of_files++;
-    }
-    return number_of_files;
-}
+#include "functions.hpp"
 
 class PluginInstance : public Gtk::VBox
 {
@@ -108,6 +84,7 @@ inline void download_plugin(PluginInstance * plugin_id)
     }
     else
     {
+        //Does this work for macOS? I don't have a mac to test it on (*cries in poor*)
         extract_command = "unzip -o \"";
         plugins_folder = home_folder + "/Library/Application Support/endless-sky/plugins/";
     }
@@ -245,6 +222,7 @@ inline PluginInstance::PluginInstance(Plugin_ID id, bool is_installed)
     {
         pack_start(uninstall_button);
     }
+
     
     separator.set_margin_top(10);
     //The last one is the separators
