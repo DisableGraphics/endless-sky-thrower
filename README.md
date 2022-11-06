@@ -28,3 +28,4 @@ Someone who can try to compile this to macOS (And test it, of course)
 # Copyright
 This program is licensed under the GNU General Public License v3.0. You can find the full license [here](https://www.gnu.org/licenses/gpl-3.0.en.html). <br>
 The icon is made by Michael Zahniser and is licensed under CC-BY-SA-4.0. You can find the full license [here](https://creativecommons.org/licenses/by-sa/4.0/legalcode)
+Thanks to [nlohmann's json library](https://github.com/nlohmann/json), which has helped me a lot.
