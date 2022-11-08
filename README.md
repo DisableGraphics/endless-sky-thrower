@@ -1,7 +1,7 @@
 # endless-sky-thrower
 Endless Sky Launcher made with GTK
 
-The name is a joke, since it's a, you know, _launcher_
+The name is a joke, since it's, you know, a _launcher_
 
 # Features
 - Multiple installations
