@@ -19,7 +19,12 @@ Install the dependencies:
 - Arch: ```sudo pacman -S curl gtkmm3```
 - Ubuntu/Debian: ```sudo apt install libgkmm-3.0-dev curl```
 
-Then, just run ```make```
+Then, just run: 
+```
+git clone https://github.com/DisableGraphics/endless-sky-thrower
+cd endless-sky-thrower
+make
+```
 # Support
 This application downloads and installs endless sky instances for you. Moreover, you can add custom instances that are already downloaded on your disk (For example: a PR, a content update...).
 # Wanted:
