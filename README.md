@@ -8,6 +8,7 @@ The name is a joke, since it's, you know, a _launcher_
     - Continuous builds (Fresh from the releases section)
     - Stable builds (If you don't want to install a potentially unstable release)
     - Custom builds (Just point to the executable and voilà)
+    - PRs (Write the PR number and ESThrower will do everything for you)
 - These installations can have optional requirements:
     - Vanilla (Won't get polluted with plugins)
     - Autoupdate (Only available for Continuous instances, automatically downloads the build everytime the launcher is opened)
@@ -16,8 +17,8 @@ The name is a joke, since it's, you know, a _launcher_
 
 # Compilation
 Install the dependencies: 
-- Arch: ```sudo pacman -S curl gtkmm3```
-- Ubuntu/Debian: ```sudo apt install libgkmm-3.0-dev curl```
+- Arch: ```yay -S curl gtkmm3 git-extras```
+- Ubuntu/Debian: ```sudo apt install libgkmm-3.0-dev curl git-extras```
 
 Then, just run: 
 ```
