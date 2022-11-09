@@ -139,6 +139,7 @@ class MyWindow : public Gtk::Window
 
         instances[instances.size() - 1].show_all();
         m_vbox.pack_start(instances[instances.size() - 1]);
+
     }
     //Returns the list of instances
     std::vector<Instance> * get_instances()
@@ -164,7 +165,7 @@ class MyWindow : public Gtk::Window
     Gtk::HeaderBar titlebar;    
     Gtk::Notebook m_notebook;
     Gtk::VBox m_plugins_vbox;
-    Gtk::ScrolledWindow m_plugins_scrolled_window;
+    Gtk::ScrolledWindow m_plugins_scrolled_window, m_instances_scrolled_window;
     bool generated_plugins{false};
     
 };
@@ -187,6 +188,42 @@ inline void on_switch_page(Gtk::Widget * page, guint number, Gtk::VBox * m_plugi
         generated_plugins = true;
     }
 }
+inline void download_pr(std::string pr_number, Gtk::ProgressBar * progress_bar, MyWindow * win, NewInstanceDialog * dialog)
+{
+    while(global::lock)
+    {
+        sleep(1);
+    }
+    global::lock = true;
+    std::string command{"git clone https://github.com/endless-sky/endless-sky.git download/" + pr_number
+    + " && cd download/" + pr_number+ " && git pr " + pr_number};
+    
+    system(command.c_str());
+    progress_bar->set_fraction(0.5);
+    //Now compile it
+    command = "cd download/" + pr_number + " && scons";
+    system(command.c_str());
+    progress_bar->set_fraction(0);
+    Gtk::Dialog warn;
+    Gtk::HeaderBar header;
+    header.set_title("Success");
+    warn.set_titlebar(header);
+    header.set_show_close_button();
+    warn.set_title("Success");
+    warn.get_action_area()->pack_start(*Gtk::manage(new Gtk::Label("The build has been downloaded and compiled.\nPlease close this dialog")));
+    warn.get_action_area()->set_orientation(Gtk::ORIENTATION_VERTICAL);
+    warn.add_button("OK", 1);
+    warn.show_all();
+    switch(warn.run())
+    {
+        case 1:
+            warn.close();
+            break;
+    }
+    global::lock = false;
+    //return ;
+}
+
 //Creates a new dialog for creating a new instance
 //Taking into account the pointer fuckery done here, I'm amazed this worked the first time I tried it.
 inline void new_dialog(MyWindow * window)
@@ -198,6 +235,27 @@ inline void new_dialog(MyWindow * window)
     switch(dialog.run())
     {
         case 1:
+            if(dialog.get_selected() == 3)
+            {
+                //It is a custom PR. We need to download it, compile it and set the version to the path of the executable
+                std::thread t(download_pr, dialog.get_version(), window->get_progress(), window, &dialog);
+                t.detach();
+                window->add_instance(dialog.get_naem(), dialog.get_typee(), "download/" + dialog.get_version() + "/endless-sky", window, dialog.auto_update(), dialog.vanilla());
+                
+                Gtk::Dialog downloading;
+                downloading.set_title("Downloading");
+                downloading.get_action_area()->pack_start(*Gtk::manage(new Gtk::Label("Downloading and compiling the PR. This may take a while.")));
+                downloading.add_button("OK", 1);
+                downloading.show_all();
+                switch(downloading.run())
+                {
+                    case 1:
+                        downloading.close();
+                        break;
+                }
+
+                return;
+            }
             window->add_instance(dialog.get_naem(), dialog.get_typee(), dialog.get_version(), window, dialog.auto_update(), dialog.vanilla());
             break;
     }
@@ -205,16 +263,17 @@ inline void new_dialog(MyWindow * window)
 //Opens the data folder in the file manager
 inline void open_data_folder()
 {
+    std::string os{get_OS()};
     std::string command;
-    if(get_OS() == "Linux")
+    if(os == "Linux")
     {
         command = "xdg-open " + std::string(getenv("HOME")) + "/.local/share/endless-sky/";
     }
-    else if(get_OS() == "Windows")
+    else if(os == "Windows")
     {
         command = "explorer " + std::string(getenv("APPDATA")) + "\\endless-sky\\";
     }
-    else if(get_OS() == "MacOS")
+    else if(os == "MacOS")
     {
         command = "open " + std::string(getenv("HOME")) + "/Library/Application Support/endless-sky/";
    }
@@ -224,7 +283,8 @@ inline void open_data_folder()
 inline MyWindow::MyWindow()
 {
     add(m_notebook);
-    m_notebook.append_page(m_vbox, "Instances");
+    m_notebook.append_page(m_instances_scrolled_window, "Instances");
+    m_instances_scrolled_window.add(m_vbox);
 
     //Set the icon
     auto p = Gdk::Pixbuf::create_from_xpm_data(esthrower);

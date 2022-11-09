@@ -128,12 +128,19 @@ class Instance : public Gtk::VBox
     {
         return &labels_box;
     }
-    //Deletes everything related to this instance. Unless it's a custom instance, then you'll have to manually delete the folder.
+    //Deletes everything related to this instance
     void get_rekt()
     {
         if(type != "Custom")
         {
             std::filesystem::remove_all("download/" + get_name());
+        }
+        else 
+        {
+            //Get the path to the folder from the filename contained in "version"
+            std::string path = version.substr(0, version.find_last_of("/"));
+            std::filesystem::remove_all(path);
+
         }
     }
     void download()

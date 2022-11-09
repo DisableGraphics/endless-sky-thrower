@@ -33,6 +33,7 @@ class NewInstanceDialog : public Gtk::Dialog
         instance_type_combo.append("Stable release");
         instance_type_combo.append("Continuous build");
         instance_type_combo.append("Custom instance");
+        instance_type_combo.append("PR");
         instance_type_combo.set_active(0);
 
         autoupdate.set_label("Autoupdate");
@@ -161,15 +162,24 @@ class NewInstanceDialog : public Gtk::Dialog
             resize(310 - 52, 1);
             show_all();
         }
-        else if(instance_type_combo.get_active_row_number() == 2)
+        else
         {
             remove_autoupdate_untouched();
             get_content_area()->remove(buttons_box);
             get_content_area()->remove(version_entry);
+            get_content_area()->remove(browse_button);
             get_content_area()->pack_start(entry_and_button);
             get_content_area()->pack_start(version_entry);
-            get_content_area()->pack_start(browse_button);
-            version_entry.set_placeholder_text("Path to the executable");
+            
+            if(instance_type_combo.get_active_row_number() == 2)
+            {
+                get_content_area()->pack_start(browse_button);
+                version_entry.set_placeholder_text("Path to the executable");
+            }
+            else
+            {
+                version_entry.set_placeholder_text("PR number");
+            }
             add_autoupdate_untouched(false);
             resize(310 - 52, 1);
             show_all();
