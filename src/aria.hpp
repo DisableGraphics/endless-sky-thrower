@@ -255,7 +255,7 @@ inline void aria2Thread(Gtk::ProgressBar * progress_bar, std::string type, std::
             }
         }
         #endif
-        global::lock = false;
+        
         while(!window->is_active())
         {
             //Wait for the window to be visible
@@ -264,6 +264,7 @@ inline void aria2Thread(Gtk::ProgressBar * progress_bar, std::string type, std::
         progress_bar->set_fraction(0);
         
     }
+    global::lock = false;
 }
 
 //Downloads and populates the list of plugins
@@ -314,7 +315,6 @@ inline void download_plugin_json()
         plugin_author = element["authors"];
         plugin_homepage = element["homepage"];
     
-        std::cout << "[INFO] Downloading plugin " << plugin_name << "..." << std::endl;
         global::plugins.push_back({plugin_name, plugin_author, plugin_version, plugin_description, plugin_short_description, plugin_homepage, plugin_license, plugin_url});
     }
     

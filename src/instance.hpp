@@ -1,11 +1,14 @@
 #include <filesystem>
 #include <gtkmm.h>
 #include <iostream>
+#include "aria.hpp"
 #include "functions.hpp"
 #include "gtkmm/checkbutton.h"
 #include "gtkmm/enums.h"
 #include "gtkmm/hvbox.h"
+#include "gtkmm/progressbar.h"
 #include "gtkmm/window.h"
+#include "sigc++/adaptors/bind.h"
 #include "sigc++/functors/mem_fun.h"
 #include "sigc++/functors/ptr_fun.h"
 //Instance class, used to store the instance data. Inherits from Gtk::HBox
@@ -13,85 +16,7 @@ class Instance : public Gtk::VBox
 {
   public:
     //Constructor. Sets the name, the type, the version and a pointer to the progress bar
-    Instance(std::string name, std::string _type, std::string _version, Gtk::ProgressBar * global_prog, Gtk::Window * win, bool autoupdate, bool untouched)
-    {
-        this->global_prog = global_prog;
-        window = win;
-        type = _type;
-        set_spacing(10);
-        name_label.set_text(name);
-        bool has_v{false};
-        this->autoupdate = autoupdate;
-        this->untouched = untouched;
-        for (char & aux : _version)
-        {
-            if (aux == 'v')
-            {
-                has_v = true;
-            }
-        }
-        if(type != "Custom")
-        {
-            if(has_v)
-            {
-                version = _version;
-            }
-            else
-            {
-                version = "v" + _version;
-            }
-        }
-        else 
-        {
-            version = _version;
-        }
-        pack_start(separator1);
-        pack_end(separator2);
-        version_label.set_label(_version);
-
-        pack_start(labels_box);
-        labels_box.pack_start(name_label);
-        labels_box.set_halign(Gtk::ALIGN_START);
-        labels_box.set_spacing(10);
-        if(type == "Continuous")
-        {
-            version_label.set_label("Continuous");
-            labels_box.pack_start(version_label);
-        }
-        else if(type == "Custom")
-        {
-            version_label.set_label("Custom");
-            labels_box.pack_start(version_label);
-        }
-        else
-        {
-            labels_box.pack_start(version_label);
-        }
-        
-        untouched_label.set_label("Vanilla instance");
-        untouched_label.set_valign(Gtk::ALIGN_CENTER);
-        untouched_label.set_halign(Gtk::ALIGN_END);
-        if(untouched)
-        {
-            labels_box.pack_end(untouched_label);
-        }
-
-        labels_box.pack_start(folder);
-        folder.set_image_from_icon_name("folder-symbolic");
-        folder.signal_clicked().connect(sigc::bind<std::string>(sigc::ptr_fun(&open_folder), get_name(), get_typee(), get_version()));
-        
-        if(type != "Custom")
-        {
-            labels_box.pack_start(update);
-        }
-        update.set_image_from_icon_name("go-down");
-        update.signal_clicked().connect(sigc::mem_fun(*this, &Instance::download));
-        labels_box.pack_start(launch);
-        launch.set_image_from_icon_name("media-playback-start");
-        launch.signal_clicked().connect(sigc::bind<std::string>(sigc::ptr_fun(&launch_game), get_name(), type, version, untouched));
-        
-        show_all();
-    }
+    Instance(std::string name, std::string _type, std::string _version, Gtk::ProgressBar * global_prog, Gtk::Window * win, bool autoupdate, bool untouched);
     void set_untouched(bool untouched)
     {
         this->untouched = untouched;
@@ -145,6 +70,7 @@ class Instance : public Gtk::VBox
     }
     void download()
     {
+        std::cout << "Downloading " << get_name() << " " << get_version() << std::endl;
         std::thread t(std::bind(aria2Thread, global_prog, get_typee(), get_name(), get_version(), window, false));
         t.detach();
     }
@@ -166,3 +92,90 @@ class Instance : public Gtk::VBox
     Gtk::Label untouched_label;
     Gtk::HBox labels_box;
 };
+//This would not fire even if the button was pressed
+inline void update_instance(Gtk::ProgressBar * prog, Gtk::Window * win, std::string name, std::string type, std::string version, bool autoupdate, bool untouched)
+{
+    std::thread t(std::bind(aria2Thread, prog, type, name, version, win, autoupdate));
+    t.detach();
+}
+
+inline Instance::Instance(std::string name, std::string _type, std::string _version, Gtk::ProgressBar * global_prog, Gtk::Window * win, bool autoupdate, bool untouched)
+{
+    this->global_prog = global_prog;
+    window = win;
+    type = _type;
+    set_spacing(10);
+    name_label.set_text(name);
+    bool has_v{false};
+    this->autoupdate = autoupdate;
+    this->untouched = untouched;
+    for (char & aux : _version)
+    {
+        if (aux == 'v')
+        {
+            has_v = true;
+        }
+    }
+    if(type != "Custom")
+    {
+        if(has_v)
+        {
+            version = _version;
+        }
+        else
+        {
+            version = "v" + _version;
+        }
+    }
+    else 
+    {
+        version = _version;
+    }
+    pack_start(separator1);
+    pack_end(separator2);
+    version_label.set_label(_version);
+
+    pack_start(labels_box);
+    labels_box.pack_start(name_label);
+    labels_box.set_halign(Gtk::ALIGN_START);
+    labels_box.set_spacing(10);
+    if(type == "Continuous")
+    {
+        version_label.set_label("Continuous");
+        labels_box.pack_start(version_label);
+    }
+    else if(type == "Custom")
+    {
+        version_label.set_label("Custom");
+        labels_box.pack_start(version_label);
+    }
+    else
+    {
+        labels_box.pack_start(version_label);
+    }
+    
+    untouched_label.set_label("Vanilla instance");
+    untouched_label.set_valign(Gtk::ALIGN_CENTER);
+    untouched_label.set_halign(Gtk::ALIGN_END);
+    if(untouched)
+    {
+        labels_box.pack_end(untouched_label);
+    }
+
+    labels_box.pack_start(folder);
+    folder.set_image_from_icon_name("folder-symbolic");
+    folder.signal_clicked().connect(sigc::bind<std::string>(sigc::ptr_fun(&open_folder), get_name(), get_typee(), get_version()));
+    
+    if(type != "Custom")
+    {
+        labels_box.pack_start(update);
+    }
+    update.set_image_from_icon_name("go-down");
+    update.signal_clicked().connect(sigc::bind(sigc::ptr_fun(&update_instance), global_prog, window, get_name(), get_typee(), get_version(), autoupdate, untouched));
+    //update.signal_clicked().connect(sigc::mem_fun(*this, &Instance::download));
+    labels_box.pack_start(launch);
+    launch.set_image_from_icon_name("media-playback-start");
+    launch.signal_clicked().connect(sigc::bind<std::string>(sigc::ptr_fun(&launch_game), get_name(), type, version, untouched));
+    
+    show_all();
+}
