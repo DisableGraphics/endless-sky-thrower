@@ -32,14 +32,14 @@ inline void remove_instance(std::string name, std::vector<Instance> *instances, 
     {
         if(instances->at(i).get_name() == name)
         {
+            std::cout << "[INFO] Deleting instance " << name << std::endl;
             instances->at(i).get_rekt();
             instances->erase(instances->begin() + i);
             instance_buttons->erase(instance_buttons->begin() + i);
-            window->show_all();
             return;
         }
     }
-    
+    window->show_all();
 }
 //Saves the instances to the disk as JSON objects
 inline void save_instances(std::vector<Instance> * instances)
