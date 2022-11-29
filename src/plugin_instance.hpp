@@ -1,18 +1,13 @@
 #include "global_variables.hpp"
 #include <filesystem>
 #include <gtkmm.h>
-#include "global_variables.hpp"
-#include "gtkmm/dialog.h"
-#include "gtkmm/enums.h"
-#include "gtkmm/headerbar.h"
-#include "gtkmm/hvbox.h"
 #include <curl/curl.h>
 #include "aria.hpp"
-#include "gtkmm/label.h"
-#include "gtkmm/separator.h"
+#include <memory>
 #include <system_error>
 #include <thread>
 #include "functions.hpp"
+#include "secondary_dialogs.hpp"
 
 class PluginInstance : public Gtk::VBox
 {
@@ -46,6 +41,7 @@ class PluginInstance : public Gtk::VBox
 inline void download_plugin(PluginInstance * plugin_id)
 {
     plugin_id->get_spinner()->start();
+    std::cout << "[INFO] Downloading plugin " << plugin_id->get_plugin_id().name << std::endl;
     //Raw plugin url
     std::string url = plugin_id->get_plugin_id().url;
 
@@ -67,28 +63,37 @@ inline void download_plugin(PluginInstance * plugin_id)
         curl_easy_cleanup(curl);
         fclose(fp);
     }
-    std::string home_folder = std::getenv("HOME");
+    std::string home_folder;
+     
     std::filesystem::create_directory("plugins/");
     std::string extract_command;
     std::string os = get_OS();
     std::string plugins_folder;
+    std::string options;
     if(os == "Linux")
     {
+        options = " -d ";
+        home_folder = std::getenv("HOME");
         extract_command = "unzip -o \"";
         plugins_folder = home_folder + "/.local/share/endless-sky/plugins";
     }
     else if(os == "Windows")
     {
-        extract_command = "7z x \"";
-        plugins_folder = "%AppData%\\endless-sky\\plugins";
+        options = " -o";
+        
+        home_folder = std::getenv("APPDATA");
+        extract_command = "7za x -y \"";
+        plugins_folder = home_folder + "\\endless-sky\\plugins";
     }
     else
     {
+        options = " -d ";
         //Does this work for macOS? I don't have a mac to test it on (*cries in poor*)
         extract_command = "unzip -o \"";
         plugins_folder = home_folder + "/Library/Application Support/endless-sky/plugins/";
     }
-    system((extract_command + "download/" + plugin_id->get_plugin_id().name + ".zip\" -d plugins/").c_str());
+    std::cout << extract_command + "download/" + plugin_id->get_plugin_id().name + ".zip\"" + options + "plugins/" << std::endl;
+    system((extract_command + "download/" + plugin_id->get_plugin_id().name + ".zip\"" + options + "plugins/").c_str());
     std::filesystem::remove_all("download/" + plugin_id->get_plugin_id().name + ".zip");
     
     std::string folder = get_first_folder("plugins/");
@@ -101,64 +106,44 @@ inline void download_plugin(PluginInstance * plugin_id)
     std::filesystem::remove_all("plugins/");
 
     plugin_id->get_spinner()->stop();
-    Gtk::HeaderBar header_bar;
-    Gtk::Dialog dialog;
-    dialog.set_titlebar(header_bar);
-    header_bar.set_title("Plugin installed");
-    header_bar.set_show_close_button();
-    dialog.get_action_area()->set_orientation(Gtk::ORIENTATION_VERTICAL);
-    Gtk::Image image;
-    image.set_from_icon_name("dialog-information", Gtk::ICON_SIZE_DIALOG);
-    dialog.get_action_area()->pack_start(image);
-    Gtk::Label label;
-    label.set_markup("The plugin <b>" + plugin_id->get_plugin_id().name + "</b> has been installed.\n\nYou can now close this window.");
-    
-    label.set_justify(Gtk::JUSTIFY_CENTER);
-
-    dialog.get_action_area()->pack_start(label);
-    dialog.show_all();
-    dialog.run();
+    //For some kind of reason, these dialogs completely freeze the program on windows
+    if(os != "Windows")
+    {
+        InformationDialog d("Plugin installed", "The plugin has been installed successfully");
+        d.show_all();
+        d.run();
+    }
 }
 
 inline void uninstall_plugin(PluginInstance * plugin_id)
 {
     plugin_id->get_spinner()->start();
-    std::string home_folder = std::getenv("HOME");
+    std::string home_folder; 
     std::string os = get_OS();
     std::string plugins_folder;
     if(os == "Linux")
     {
+        home_folder = std::getenv("HOME");
         plugins_folder = home_folder + "/.local/share/endless-sky/plugins";
     }
     else if(os == "Windows")
     {
+        home_folder = std::getenv("APPDATA");
         plugins_folder = "%AppData%\\endless-sky\\plugins";
     }
     else
     {
+        home_folder = std::getenv("HOME");
         plugins_folder = home_folder + "/Library/Application Support/endless-sky/plugins/";
     }
     std::filesystem::remove_all(plugins_folder + "/" + plugin_id->get_plugin_id().name);
     plugin_id->get_spinner()->stop();
-    
-    Gtk::Dialog dialog("Plugin uninstalled");
-    dialog.get_action_area()->pack_start(*Gtk::manage(new Gtk::Image(Gtk::Stock::DIALOG_INFO, Gtk::ICON_SIZE_DIALOG)));
-    Gtk::HeaderBar header_bar;
-    header_bar.set_title("Plugin uninstalled");
-    dialog.set_titlebar(header_bar);
-    header_bar.set_show_close_button();
-    //This label should be at bottom
-    dialog.get_action_area()->set_orientation(Gtk::ORIENTATION_VERTICAL);
-    Gtk::Label label;
-    label.set_markup("The plugin <b>" + plugin_id->get_plugin_id().name + "</b> has been uninstalled.\n\nYou can now close this window.");
-    label.set_justify(Gtk::JUSTIFY_CENTER);
-
-    dialog.set_halign(Gtk::ALIGN_CENTER);
-    dialog.set_valign(Gtk::ALIGN_CENTER);
-
-    dialog.get_action_area()->pack_start(label);
-    dialog.show_all();
-    dialog.run();
+    if(os != "Windows")
+    {
+        InformationDialog d("Plugin uninstalled", "The plugin has been uninstalled successfully");
+        d.show_all();
+        d.run();
+    }
 
     plugin_id->set_uninstalled();
 }

@@ -8,22 +8,12 @@
 #include "aria.hpp"
 #include "dialogs.hpp"
 #include "functions.hpp"
-#include "glibmm/refptr.h"
 #include "global_variables.hpp"
-#include "gtkmm/button.h"
-#include "gtkmm/dialog.h"
-#include "gtkmm/headerbar.h"
-#include "gtkmm/hvbox.h"
-#include "gtkmm/image.h"
-#include "gtkmm/label.h"
-#include "gtkmm/notebook.h"
-#include "gtkmm/progressbar.h"
-#include "gtkmm/scrolledwindow.h"
-#include "gtkmm/widget.h"
 #include "instance.hpp"
 #include "plugin_instance.hpp"
 #include "functions.hpp"
 #include "icon/esthrower.xpm"
+#include "secondary_dialogs.hpp"
 
 //Removes the instance from the list of instances using its name
 inline void remove_instance(std::string name, std::vector<Instance> *instances, std::vector<Gtk::Button> *instance_buttons, Gtk::Window * window)
@@ -113,17 +103,9 @@ class MyWindow : public Gtk::Window
         {
             if(p.get_name() == name)
             {
-                Gtk::Dialog warn;
-                warn.set_title("Warning");
-                warn.get_action_area()->pack_start(*Gtk::manage(new Gtk::Label("An instance with this name already exists.")));
-                warn.add_button("OK", 1);
-                warn.show_all();
-                switch(warn.run())
-                {
-                    case 1:
-                        warn.close();
-                        break;
-                }
+                InformationDialog d("Instance already exists", "The instance " + name + " already exists. Please choose a different name.", true);
+                d.show_all();
+                d.run();
                 return;
             }
         }
@@ -134,12 +116,11 @@ class MyWindow : public Gtk::Window
 
         instance_buttons.push_back(Gtk::Button());
         tmp->pack_start(instance_buttons[instance_buttons.size()-1]);
-        instance_buttons[instance_buttons.size() -1].set_image_from_icon_name("user-trash-symbolic");
-        instance_buttons[instance_buttons.size()-1].signal_clicked().connect(sigc::bind(sigc::ptr_fun(&remove_instance), instances[instances.size()-1].get_name(), &instances, &instance_buttons, (Gtk::Window *)this));
-
+        instance_buttons[instance_buttons.size() - 1].set_image_from_icon_name("user-trash-symbolic");
+        instance_buttons[instance_buttons.size() - 1].signal_clicked().connect(sigc::bind(sigc::ptr_fun(&remove_instance), instances[instances.size()-1].get_name(), &instances, &instance_buttons, (Gtk::Window *)this));
+        instance_buttons[instance_buttons.size() - 1].set_tooltip_text("Delete instance");
         instances[instances.size() - 1].show_all();
         m_vbox.pack_start(instances[instances.size() - 1]);
-
     }
     //Returns the list of instances
     std::vector<Instance> * get_instances()
@@ -204,21 +185,11 @@ inline void download_pr(std::string pr_number, Gtk::ProgressBar * progress_bar, 
     command = "cd download/" + pr_number + " && scons";
     system(command.c_str());
     progress_bar->set_fraction(0);
-    Gtk::Dialog warn;
-    Gtk::HeaderBar header;
-    header.set_title("Success");
-    warn.set_titlebar(header);
-    header.set_show_close_button();
-    warn.set_title("Success");
-    warn.get_action_area()->pack_start(*Gtk::manage(new Gtk::Label("The build has been downloaded and compiled.\nPlease close this dialog")));
-    warn.get_action_area()->set_orientation(Gtk::ORIENTATION_VERTICAL);
-    warn.add_button("OK", 1);
-    warn.show_all();
-    switch(warn.run())
+    if(get_OS() != "Windows")
     {
-        case 1:
-            warn.close();
-            break;
+        InformationDialog d("Download complete", "The PR has been downloaded and compiled. You can now launch it.", true);
+        d.show_all();
+        d.run();
     }
     global::lock = false;
     //return ;
@@ -242,17 +213,9 @@ inline void new_dialog(MyWindow * window)
                 t.detach();
                 window->add_instance(dialog.get_naem(), dialog.get_typee(), "download/" + dialog.get_version() + "/endless-sky", window, dialog.auto_update(), dialog.vanilla());
                 
-                Gtk::Dialog downloading;
-                downloading.set_title("Downloading");
-                downloading.get_action_area()->pack_start(*Gtk::manage(new Gtk::Label("Downloading and compiling the PR. This may take a while.")));
-                downloading.add_button("OK", 1);
-                downloading.show_all();
-                switch(downloading.run())
-                {
-                    case 1:
-                        downloading.close();
-                        break;
-                }
+                InformationDialog d("Download started", "The download has started. Do not close the launcher while the download and compilation lasts.", true);
+                d.show_all();
+                d.run();
 
                 return;
             }
@@ -293,7 +256,9 @@ inline MyWindow::MyWindow()
     titlebar.pack_start(m_new_instance_button);
     titlebar.pack_start(m_open_data_folder_button);
     m_open_data_folder_button.set_image_from_icon_name("folder-symbolic");
+    m_open_data_folder_button.set_tooltip_text("Open the Endless Sky data folder");
     m_new_instance_button.set_image_from_icon_name("document-new");
+    m_new_instance_button.set_tooltip_text("Create a new instance");
     m_vbox.set_border_width(10);
     m_vbox.set_spacing(10);
     m_vbox.set_valign(Gtk::ALIGN_START);

@@ -12,6 +12,7 @@
 #include <curl/curl.h>
 #include <nlohmann/json.hpp>
 #include <fstream>
+#include "secondary_dialogs.hpp"
 //Every 300 milliseconds, the progress bar will be updated. The progress bar would crash if done with less interval time
 //on my third gen Intel shitty laptop
 #define MINIMAL_PROGRESS_FUNCTIONALITY_INTERVAL 300000
@@ -210,50 +211,10 @@ inline void aria2Thread(Gtk::ProgressBar * progress_bar, std::string type, std::
         //Dialog to notify the user that the download is complete
         //This dialog bugs on windows, so I'm disabling it for now
         #ifndef _WIN32
-        Gtk::Dialog finished_downloading_dialog;
-        Gtk::VBox finished_downloading_vbox;
-        Gtk::HeaderBar finished_downloading_headerbar;
-
-        finished_downloading_headerbar.set_title("Finished Downloading");
-        finished_downloading_headerbar.set_show_close_button(true);
-        finished_downloading_dialog.set_titlebar(finished_downloading_headerbar);
-
-        finished_downloading_vbox.set_spacing(10);
-        finished_downloading_vbox.set_margin_top(10);
-        finished_downloading_vbox.set_margin_bottom(10);
-        finished_downloading_vbox.set_valign(Gtk::ALIGN_CENTER);
-        finished_downloading_vbox.set_halign(Gtk::ALIGN_CENTER);
+        InformationDialog * dialog = new InformationDialog("Download Complete", "The instance has been downloaded correctly. You can now launch the game.");
+        dialog->show_all();
+        dialog->run();
         
-        finished_downloading_dialog.get_action_area()->pack_start(finished_downloading_vbox);
-        Gtk::Label finished_downloading_label;
-        finished_downloading_label.set_valign(Gtk::ALIGN_CENTER); 
-        finished_downloading_label.set_halign(Gtk::ALIGN_CENTER);
-        finished_downloading_label.set_justify(Gtk::JUSTIFY_CENTER);
-        finished_downloading_label.set_markup("Finished downloading instance <b>" + instance_name + "</b> of type <b>" + type + "</b>.\n\nYou can now close this window.");
-        finished_downloading_vbox.pack_start(finished_downloading_label);
-        
-        Gtk::Button * finished_downloading_button = finished_downloading_dialog.add_button("Close", Gtk::RESPONSE_OK);
-        finished_downloading_button->set_resize_mode(Gtk::RESIZE_PARENT);
-        finished_downloading_button->get_parent()->remove(*finished_downloading_button);
-        finished_downloading_vbox.pack_start(*finished_downloading_button);
-        finished_downloading_vbox.set_hexpand();
-        finished_downloading_vbox.set_halign(Gtk::ALIGN_CENTER);
-
-        finished_downloading_dialog.show_all();
-
-        switch(finished_downloading_dialog.run())
-        {
-            case(Gtk::RESPONSE_OK):
-            {
-                finished_downloading_dialog.close();
-                break;
-            }
-            default:
-            {
-                finished_downloading_dialog.close();
-                break;
-            }
-        }
         #endif
         
         while(!window->is_active())
@@ -262,7 +223,7 @@ inline void aria2Thread(Gtk::ProgressBar * progress_bar, std::string type, std::
             sleep(1);
         }
         progress_bar->set_fraction(0);
-        
+        delete dialog;
     }
     global::lock = false;
 }

@@ -1,0 +1,29 @@
+#THIS DOESN'T WORK. I'VE YET TO MAKE A HACKINTOSH OR SOMETHING
+#SINCE I NEED TO GET MACOS TO KNOW HOW THIS WORKS
+#AND I'M NOT GONNA SPEND 1000€ ON A MAC
+
+#I could make a vm, but my computer is really low on space
+
+OSXCROSS_MP_INC=1
+PREFIX=x86_64-apple-darwin17-
+CC=$(PREFIX)cc
+CXX=$(PREFIX)c++
+CFLAGS=-c -Wall
+#Link with Gtkmm 3.0 and libcurl
+LDFLAGS=`$(PREFIX)pkg-config --cflags --libs gtkmm-3.0 libcurl`
+SOURCES=src/main.cpp
+OBJECTS=$(SOURCES:.cpp=.o)
+EXECUTABLE_FOLDER=build/macos/
+EXECUTABLE=$(EXECUTABLE_FOLDER)/$(shell basename $(CURDIR))
+INCLUDE_FLAGS=-Iinclude
+
+all: $(EXECUTABLE_FOLDER) $(EXECUTABLE)
+
+$(EXECUTABLE):
+	$(CXX) $(INCLUDE_FLAGS) $(SOURCES) -o $@ $(LDFLAGS)
+
+$(EXECUTABLE_FOLDER):
+	mkdir -p $(EXECUTABLE_FOLDER)
+
+clean:
+	rm -rf build/*

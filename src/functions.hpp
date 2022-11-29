@@ -151,7 +151,7 @@ inline void launch_game(const std::string &instance_name, const std::string &ins
 			bool _plugins_exists{std::filesystem::exists(es_folder + "/_plugins")};
 			std::string target_folder_plugins{untouched ? es_folder + "/plugins" : es_folder + "/_plugins"};
 
-			if(untouched && plugins_exists)
+			if(untouched && plugins_exists && !_plugins_exists)
 			{
 				//C++'s native filesystem library doesn't support moving non-empty directories, so we have to use this handy C function.
 

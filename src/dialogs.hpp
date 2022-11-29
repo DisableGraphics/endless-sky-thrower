@@ -1,6 +1,5 @@
 #pragma once
 #include "gtkmm/checkbutton.h"
-#include "gtkmm/hvbox.h"
 #include <gtkmm.h>
 #include <iostream>
 //When creating an instance, this dialog will appear.

@@ -3,13 +3,10 @@
 #include <iostream>
 #include "aria.hpp"
 #include "functions.hpp"
-#include "gtkmm/checkbutton.h"
-#include "gtkmm/enums.h"
 #include "gtkmm/hvbox.h"
 #include "gtkmm/progressbar.h"
 #include "gtkmm/window.h"
 #include "sigc++/adaptors/bind.h"
-#include "sigc++/functors/mem_fun.h"
 #include "sigc++/functors/ptr_fun.h"
 //Instance class, used to store the instance data. Inherits from Gtk::HBox
 class Instance : public Gtk::VBox
@@ -65,7 +62,6 @@ class Instance : public Gtk::VBox
             //Get the path to the folder from the filename contained in "version"
             std::string path = version.substr(0, version.find_last_of("/"));
             std::filesystem::remove_all(path);
-
         }
     }
     void download()
@@ -89,6 +85,7 @@ class Instance : public Gtk::VBox
     Gtk::Button delete_button;
     Gtk::Button folder;
     Gtk::Button update;
+    Gtk::Button run_without_plugins;
     Gtk::Label untouched_label;
     Gtk::HBox labels_box;
 };
@@ -165,17 +162,26 @@ inline Instance::Instance(std::string name, std::string _type, std::string _vers
     labels_box.pack_start(folder);
     folder.set_image_from_icon_name("folder-symbolic");
     folder.signal_clicked().connect(sigc::bind<std::string>(sigc::ptr_fun(&open_folder), get_name(), get_typee(), get_version()));
-    
+    folder.set_tooltip_text("Open instance folder");
     if(type != "Custom")
     {
         labels_box.pack_start(update);
     }
     update.set_image_from_icon_name("go-down");
     update.signal_clicked().connect(sigc::bind(sigc::ptr_fun(&update_instance), global_prog, window, get_name(), get_typee(), get_version(), autoupdate, untouched));
-    //update.signal_clicked().connect(sigc::mem_fun(*this, &Instance::download));
+    update.set_tooltip_text("Update instance");
     labels_box.pack_start(launch);
     launch.set_image_from_icon_name("media-playback-start");
     launch.signal_clicked().connect(sigc::bind<std::string>(sigc::ptr_fun(&launch_game), get_name(), type, version, untouched));
-    
+    launch.set_tooltip_text("Launch the game");
+    if(!get_untouched())
+    {
+        labels_box.pack_start(run_without_plugins);
+    }
+    run_without_plugins.set_image_from_icon_name("video-display-symbolic");
+    run_without_plugins.signal_clicked().connect(sigc::bind<std::string>(sigc::ptr_fun(&launch_game), get_name(), type, version, true));
+    //Put a small label when hovering over the button
+    run_without_plugins.set_tooltip_text("Launch the game without plugins");
+
     show_all();
 }
