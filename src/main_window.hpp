@@ -180,11 +180,13 @@ inline void download_pr(std::string pr_number, Gtk::ProgressBar * progress_bar, 
     + " && cd download/" + pr_number+ " && git pr " + pr_number};
     
     system(command.c_str());
-    progress_bar->set_fraction(0.5);
+    if(win->is_active())
+    {
+        progress_bar->set_fraction(0.5);
+    }
     //Now compile it
     command = "cd download/" + pr_number + " && scons";
     system(command.c_str());
-    progress_bar->set_fraction(0);
     if(get_OS() != "Windows")
     {
         InformationDialog d("Download complete", "The PR has been downloaded and compiled. You can now launch it.", true);
@@ -192,7 +194,11 @@ inline void download_pr(std::string pr_number, Gtk::ProgressBar * progress_bar, 
         d.run();
     }
     global::lock = false;
-    //return ;
+    while(!win->is_active())
+    {
+        sleep(1);
+    }
+    progress_bar->set_fraction(0);
 }
 
 //Creates a new dialog for creating a new instance
