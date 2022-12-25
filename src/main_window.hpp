@@ -185,6 +185,7 @@ inline void download_pr(std::string pr_number, Gtk::ProgressBar * progress_bar, 
         progress_bar->set_fraction(0.5);
     }
     //Now compile it
+    //Now that the Discord ppl said tha we were gonna use cmake...
     command = "cd download/" + pr_number + " && scons";
     system(command.c_str());
     if(get_OS() != "Windows")

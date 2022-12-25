@@ -1,14 +1,10 @@
 #pragma once
-#include "gtkmm/enums.h"
-#include "gtkmm/label.h"
-#include "gtkmm/progressbar.h"
 #include <thread>
 #define CURL_STATICLIB
 #include <iostream>
 #include <gtkmm.h>
 #include <filesystem>
 #include "global_variables.hpp"
-#include "gtkmm/headerbar.h"
 #include <curl/curl.h>
 #include <nlohmann/json.hpp>
 #include <fstream>
@@ -153,7 +149,6 @@ inline void aria2Thread(Gtk::ProgressBar * progress_bar, std::string type, std::
         url += instance_v + "/" + es + "-macos-" + instance_v + ".zip";
         file_prefix = "EndlessSky-macos.zip";
     }
-    
     //I like that I can output the file to a specific filename, so I don't have to rename it later.
     std::string out_str = ("download/" + instance_name + "/" + file_prefix).c_str();
     char outfilename[FILENAME_MAX];
