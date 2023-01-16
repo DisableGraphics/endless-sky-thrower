@@ -14,6 +14,20 @@
 
 int main(int argc, char* argv[])
 {
+	#ifdef __linux__
+	//Check if a file named "/tmp/esthrower.lock" exists. If it does, then the program is already running.
+	//If it doesn't, then create the file and continue.
+	if(std::filesystem::exists("/tmp/esthrower.lock"))
+	{
+		std::cout << "The program is already running. Exiting..." << std::endl;
+		return 0;
+	}
+	else
+	{
+		std::ofstream lock_file("/tmp/esthrower.lock");
+		lock_file.close();
+	}
+	#endif
   	curl_global_init(CURL_GLOBAL_ALL);
 	
 	auto app = Gtk::Application::create("org.gtkmm.examples.base");

@@ -247,6 +247,21 @@ inline void download_plugin_json()
         curl_easy_cleanup(curl);
         fclose(fp);
     }
+    //Get the size of the json file to test if it was downloaded correctly. If it is 0, then the download failed. (No internet)
+    std::ifstream verification;
+    verification.open("download/plugins.json");
+    verification.seekg(0, std::ios::end);
+    int size = verification.tellg();
+    verification.close();
+
+    if(size == 0)
+    {
+        std::cout << "[WARN] Download of plugins.json file failed. If there's an internet connection, please try again" << std::endl;
+        return;
+    }
+    
+
+
     nlohmann::json j;
     std::ifstream i("download/plugins.json");
     i >> j;

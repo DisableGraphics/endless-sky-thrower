@@ -88,6 +88,9 @@ inline std::vector<Instance> read_instances(Gtk::ProgressBar * global_prog, Gtk:
 //Note the use of the 'deelete' word, since the on_delete_event is an already defined function in Gtk::Window
 inline bool on_deelete_event(GdkEventAny* any_event, std::vector<Instance> *instances)
 {
+    //Delete the temporary file /tmp/esthrower.lock
+    std::remove("/tmp/esthrower.lock");
+
     save_instances(instances);
     return false;
 }

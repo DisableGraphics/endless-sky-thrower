@@ -33,23 +33,45 @@ inline int get_number_of_files_in_folder(std::string folder)
     return number_of_files;
 }
 
+inline bool exists_modplugins(std::string datadir)
+{
+	return std::filesystem::exists(datadir + "/_plugins");
+}
+
 inline bool is_plugin_installed(const std::string &plugin_name)
 {
 	// = "/usr/share/aria/plugins/" + plugin_name;
 	std::string os = get_OS();
 	std::string plugin_folder;
+	std::string plugin_folder_postfix = "plugins/";
+	std::string data_folder;
 
 	if(os == "Linux")
 	{
-		plugin_folder = std::getenv("HOME") + std::string("/.local/share/endless-sky/plugins/") + plugin_name;
+		data_folder = std::getenv("HOME") + std::string("/.local/share/endless-sky/");
+		if(exists_modplugins(data_folder))
+		{
+			plugin_folder_postfix = "_plugins/";
+		}
+		plugin_folder = data_folder + plugin_folder_postfix + plugin_name;
 	}
 	else if(os == "Windows")
 	{
-		plugin_folder = std::getenv("APPDATA") + std::string("/endless-sky/plugins/") + plugin_name;
+		data_folder = std::getenv("APPDATA") + std::string("/endless-sky/");
+		if(exists_modplugins(data_folder))
+		{
+			plugin_folder_postfix = "_plugins/";
+		}
+		plugin_folder = data_folder + plugin_folder_postfix + plugin_name;
 	}
 	else if(os == "MacOS")
 	{
-		plugin_folder = std::getenv("HOME") + std::string("/Library/Application Support/endless-sky/plugins/") + plugin_name;
+		data_folder = std::getenv("HOME") + std::string("/Library/Application Support/endless-sky/");
+		if(exists_modplugins(data_folder))
+		{
+			plugin_folder_postfix = "_plugins/";
+		}
+		plugin_folder = data_folder + plugin_folder_postfix + plugin_name;
 	}
 
 	if (std::filesystem::exists(plugin_folder))
