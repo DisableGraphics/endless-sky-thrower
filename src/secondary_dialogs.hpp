@@ -30,6 +30,7 @@ inline InformationDialog::InformationDialog(std::string title, std::string messa
     set_position(Gtk::WIN_POS_CENTER_ALWAYS);
 
     message_label.set_markup(message);
+    message_label.set_justify(Gtk::JUSTIFY_CENTER);
     ok_button.set_label("OK");
     ok_button.signal_clicked().connect(sigc::mem_fun(*this, &InformationDialog::quit));
     icon.set_from_icon_name("dialog-information", Gtk::ICON_SIZE_DIALOG);
