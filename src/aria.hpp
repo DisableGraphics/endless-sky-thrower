@@ -218,7 +218,9 @@ inline void aria2Thread(Gtk::ProgressBar * progress_bar, std::string type, std::
             sleep(1);
         }
         progress_bar->set_fraction(0);
+        #ifndef _WIN32
         delete dialog;
+        #endif
     }
     global::lock = false;
 }

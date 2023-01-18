@@ -248,11 +248,11 @@
     "authors": "Michael Arsollon",
     "homepage": "https://github.com/MidnightPlugins/Lost-in-Midnight",
     "license": "GPL-3.0-or-later",
-    "version": "0.9.16.3.0",
+    "version": "0.9.16.3.1",
     "shortDescription": "Lost in Midnight is a mission focused plugin for the Endless Sky game. Features new missions, systems, outfits, ships, and variants.",
     "description": "Lost technology, Lost knowledge, And people, who have lost their way trying to navigate life in this vast galaxy...",
-    "url": "https://github.com/MidnightPlugins/Lost-in-Midnight/releases/download/0.9.16.3.0/Lost.in.Midnight-0.9.16.3.0.zip",
-    "iconUrl": "https://raw.githubusercontent.com/MidnightPlugins/Lost-in-Midnight/0.9.16.3.0/icon.png",
+    "url": "https://github.com/MidnightPlugins/Lost-in-Midnight/releases/download/0.9.16.3.1/Lost.in.Midnight-0.9.16.3.1.zip",
+    "iconUrl": "https://raw.githubusercontent.com/MidnightPlugins/Lost-in-Midnight/0.9.16.3.1/icon.png",
     "autoupdate": {
       "type": "tag",
       "url": "https://github.com/MidnightPlugins/Lost-in-Midnight/releases/download/$version/Lost.in.Midnight-$version.zip",
@@ -295,11 +295,11 @@
     "authors": "1010todd",
     "homepage": "https://github.com/1010todd/Mega-Freight",
     "license": "GPL-3.0-or-later",
-    "version": "0fc462897e8b1dd8a5bb6c2c3720bde5845c1510",
+    "version": "8e11fd5f12fbec06ada919e3ba9e79fe8b57e2e9",
     "shortDescription": "Adds several mostly civilian ships for you and npc merchants (and pirates) to use for more variety in human space.",
     "description": "This plugin adds several civilian and some military ships to add some more variety to human space. Mostly focused around larger ships but also have smaller freighters and starter-level ships as well.",
-    "url": "https://github.com/1010todd/Mega-Freight/archive/0fc462897e8b1dd8a5bb6c2c3720bde5845c1510.zip",
-    "iconUrl": "https://github.com/1010todd/Mega-Freight/raw/0fc462897e8b1dd8a5bb6c2c3720bde5845c1510/icon.png",
+    "url": "https://github.com/1010todd/Mega-Freight/archive/8e11fd5f12fbec06ada919e3ba9e79fe8b57e2e9.zip",
+    "iconUrl": "https://github.com/1010todd/Mega-Freight/raw/8e11fd5f12fbec06ada919e3ba9e79fe8b57e2e9/icon.png",
     "autoupdate": {
       "type": "commit",
       "branch": "main",
@@ -329,11 +329,11 @@
     "authors": "Michael Arsollon",
     "homepage": "https://github.com/MidnightPlugins/Midnight-Scrapyard",
     "license": "GPL-3.0-or-later",
-    "version": "0.9.16.2.1",
+    "version": "0.9.16.3.0",
     "shortDescription": "A plugin suggesting an epilogue for the Kor Sestor region of Endless Sky. Includes some new ships, outfits, and missions.",
     "description": "This region of space has abandoned derelicts waiting to be scavenged. But something lurks amongst the wreckage...",
-    "url": "https://github.com/MidnightPlugins/Midnight-Scrapyard/releases/download/0.9.16.2.1/Midnight.Scrapyard-0.9.16.2.1.zip",
-    "iconUrl": "https://raw.githubusercontent.com/MidnightPlugins/Midnight-Scrapyard/0.9.16.2.1/icon.png",
+    "url": "https://github.com/MidnightPlugins/Midnight-Scrapyard/releases/download/0.9.16.3.0/Midnight.Scrapyard-0.9.16.3.0.zip",
+    "iconUrl": "https://raw.githubusercontent.com/MidnightPlugins/Midnight-Scrapyard/0.9.16.3.0/icon.png",
     "autoupdate": {
       "type": "tag",
       "url": "https://github.com/MidnightPlugins/Midnight-Scrapyard/releases/download/$version/Midnight.Scrapyard-$version.zip",
@@ -438,11 +438,11 @@
     "authors": "Michael Zahniser",
     "homepage": "https://github.com/endless-sky/endless-sky-high-dpi",
     "license": "CC-BY-SA-4.0",
-    "version": "ab1c16e650a6ae1435f13f0d4b7b68a3eeb54f4e",
+    "version": "cac6c14766bb7c0813b2998652a61e20bb73c2c0",
     "shortDescription": "High-DPI graphics for Endless Sky.",
     "description": "This plugin contains double resolution graphics, which are only used if you have a high-dpi monitor or if you set the zoom level above 100%. This will roughly double the amount of memory used by the game.",
-    "url": "https://github.com/endless-sky/endless-sky-high-dpi/archive/ab1c16e650a6ae1435f13f0d4b7b68a3eeb54f4e.zip",
-    "iconUrl": "https://github.com/endless-sky/endless-sky-high-dpi/raw/ab1c16e650a6ae1435f13f0d4b7b68a3eeb54f4e/icon.png",
+    "url": "https://github.com/endless-sky/endless-sky-high-dpi/archive/cac6c14766bb7c0813b2998652a61e20bb73c2c0.zip",
+    "iconUrl": "https://github.com/endless-sky/endless-sky-high-dpi/raw/cac6c14766bb7c0813b2998652a61e20bb73c2c0/icon.png",
     "autoupdate": {
       "type": "commit",
       "url": "https://github.com/endless-sky/endless-sky-high-dpi/archive/$version.zip",
@@ -461,6 +461,22 @@
     "autoupdate": {
       "type": "tag",
       "url": "https://bitbucket.org/YellowApple/endless-cargo/get/$version.zip"
+    }
+  },
+  {
+    "name": "Outfit Highlighter",
+    "authors": "Michael Arsollon",
+    "homepage": "https://github.com/MidnightPlugins/Outfit-Highlighter",
+    "license": "GPL-3.0-or-later",
+    "version": "0.9.16.3.0",
+    "shortDescription": "Makes the selected outfit stand out more in the outfitter screen.",
+    "description": "Makes the selected outfit stand out more in the outfitter screen. Recommended for those who prefer to navigate the outfitter using the keyboard instead of the mouse. Now includes themed highlighters! To change themes, copy the image from the chosen theme's subfolder and paste into the plugin's ui folder.",
+    "url": "https://github.com/MidnightPlugins/Outfit-Highlighter/releases/download/0.9.16.3.0/Outfit.Highlighter-0.9.16.3.0.zip",
+    "iconUrl": "https://raw.githubusercontent.com/MidnightPlugins/Outfit-Highlighter/0.9.16.3.0/icon.png",
+    "autoupdate": {
+      "type": "tag",
+      "url": "https://github.com/MidnightPlugins/Outfit-Highlighter/releases/download/$version/Outfit.Highlighter-$version.zip",
+      "iconUrl": "https://raw.githubusercontent.com/MidnightPlugins/Outfit-Highlighter/$version/icon.png"
     }
   },
   {

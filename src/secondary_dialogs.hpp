@@ -13,6 +13,7 @@ class InformationDialog : public Gtk::Dialog
         Gtk::Button ok_button;
         Gtk::HeaderBar title_bar;
         Gtk::Image icon;
+        //This is the cutest function I've ever wrote lol
         void quit()
         {
             hide();
