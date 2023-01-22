@@ -112,7 +112,7 @@ inline void aria2Thread(Gtk::ProgressBar * progress_bar, std::string type, std::
         instance_v = "continuous";
         upper_case = true;
         
-        different_naming_scheme = true;
+        //different_naming_scheme = true;
         
     }
     std::string file_prefix;
@@ -120,12 +120,19 @@ inline void aria2Thread(Gtk::ProgressBar * progress_bar, std::string type, std::
     {
         if(different_naming_scheme)
         {
-            url += instance_v + "/endless-sky-x86_64-" + instance_v +".AppImage";
+            if(instance_v == "continuous")
+                url += instance_v + "/Endless_Sky-" + instance_v +"-x86_64.AppImage";
+            else
+                url += instance_v + "/endless-sky-x86_64-" + instance_v + ".AppImage";
         }
         else 
         {
-            url += instance_v + "/endless-sky-amd64-" + instance_v + ".AppImage";
+            if(instance_v == "continuous")
+                url += instance_v + "/endless-sky-x86_64-" + instance_v + ".AppImage";
+            else
+                url += instance_v + "/endless-sky-amd64-" + instance_v + ".AppImage";
         }
+        
         file_prefix = "endless-sky.AppImage";
     }
     else if(os == "Windows")
