@@ -1,10 +1,6 @@
 *.AppImage*
 .cache
+.vscode
 /build
 build
-build/
-build/*
-build/**
-build/***/*
-build/***/**
-build/***/**/*
+/build/
