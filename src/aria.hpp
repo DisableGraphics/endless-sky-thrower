@@ -206,7 +206,7 @@ inline void aria2Thread(Gtk::ProgressBar * progress_bar, std::string type, std::
     {
         std::cout << "[INFO] Verified correctness of download. Proceeding with next operation." << std::endl;
     }
-    //Lol they changed the naming scheme for the continuous builds and now this created a lot of dialog instances
+    //Lol they changed the naming scheme for the continuous builds and this created a lot of dialog instances
     if(!different_naming_scheme /*|| type == "Continuous"*/)
     {
         //Dialog to notify the user that the download is complete
