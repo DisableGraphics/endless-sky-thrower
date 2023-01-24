@@ -215,7 +215,6 @@ inline void aria2Thread(Gtk::ProgressBar * progress_bar, std::string type, std::
         InformationDialog * dialog = new InformationDialog("Download Complete", "The instance has been downloaded correctly. You can now launch the game.");
         dialog->show_all();
         dialog->run();
-        
         #endif
         
         while(!window->is_active())
