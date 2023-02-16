@@ -1,4 +1,4 @@
-project('esthrower', 'cpp', default_options : ['cpp_std=c++17'])
+project('esthrower', 'cpp', default_options : ['cpp_std=c++17'], version: '0.1.0')
 gtkdep = dependency('gtkmm-3.0')
 curldep = dependency('libcurl')
 archivedep = dependency('libarchive')
@@ -12,4 +12,4 @@ elif host_machine.system() == 'darwin'
 else #Generic UNIX
     install_dir = '/usr/bin'
 endif
-executable('esthrower', ['src/main.cpp'], dependencies : [gtkdep, curldep, archivedep], install : true, install_dir : install_dir)
+executable('esthrower', ['src/secondary_dialogs.cpp', 'src/main.cpp'], dependencies : [gtkdep, curldep, archivedep], install : true, install_dir : install_dir)
