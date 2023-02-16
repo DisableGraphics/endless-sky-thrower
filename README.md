@@ -17,21 +17,22 @@ The name is a joke, since it's, you know, a _launcher_
 
 # Compilation
 Install the dependencies: 
-- Arch: ```yay -S curl gtkmm3 git-extras```
-- Ubuntu/Debian: ```sudo apt install libgkmm-3.0-dev curl git-extras```
+- Arch: ```yay -S curl gtkmm3 git-extras meson```
+- Ubuntu/Debian: ```sudo apt install libgkmm-3.0-dev curl git-extras meson```
 
 Then, just run: 
 ```
 git clone https://github.com/DisableGraphics/endless-sky-thrower
 cd endless-sky-thrower
-make
+meson setup builddir
+meson compile -C builddir
 ```
 # Support
 This application downloads and installs endless sky instances for you. Moreover, you can add custom instances that are already downloaded on your disk (For example: a PR, a content update...).
 # Wanted:
-Someone who can try to compile this to macOS (And test it, of course)
+Someone who can help me port this to macOS
 
 # Copyright
 This program is licensed under the GNU General Public License v3.0. You can find the full license [here](https://www.gnu.org/licenses/gpl-3.0.en.html). <br>
 The icon is made by Michael Zahniser and is licensed under CC-BY-SA-4.0. You can find the full license [here](https://creativecommons.org/licenses/by-sa/4.0/legalcode). <br>
-Special mention to [nlohmann's json library](https://github.com/nlohmann/json), which has helped me a lot.
+[nlohmann's json library](https://github.com/nlohmann/json), the library I'm using for JSON parsing [MIT License](https://mit-license.org/)
