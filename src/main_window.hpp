@@ -23,10 +23,23 @@ inline void remove_instance(std::string name, std::vector<Instance> *instances, 
         if(instances->at(i).get_name() == name)
         {
             std::cout << "[INFO] Deleting instance " << name << std::endl;
-            instances->at(i).get_rekt();
+            DeletingInstanceDialog dialog("Are you sure you want to delete " + name + "?\nThis will remove the instance.");
+            dialog.run();
+            if(dialog.cancelled())
+            {
+                break;
+            }
             instances->erase(instances->begin() + i);
             instance_buttons->erase(instance_buttons->begin() + i);
-            return;
+
+            DeletingInstanceDialog dialog2("Do you want to delete the instance folder?\nThis will remove the instance folder and all its contents.");
+            dialog2.run();
+            if(dialog2.cancelled())
+            {
+                break;
+            }
+            instances->at(i).get_rekt();
+            break;
         }
     }
     window->show_all();

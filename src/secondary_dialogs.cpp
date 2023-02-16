@@ -46,11 +46,32 @@ DeletingInstanceDialog::DeletingInstanceDialog(std::string message)
     label.set_line_wrap(true);
     cancel_button.set_label("Cancel");
     ok_button.set_label("OK");
-    icon.set_from_icon_name("dialog-information", Gtk::ICON_SIZE_DIALOG);
+    icon.set_from_icon_name("dialog-warning", Gtk::ICON_SIZE_DIALOG);
     get_content_area()->pack_start(icon);
     get_content_area()->pack_start(label);
-    get_content_area()->pack_start(cancel_button);
-    get_content_area()->pack_start(ok_button);
+    get_content_area()->pack_start(buttons_box);
+    buttons_box.pack_start(cancel_button);
+    buttons_box.pack_start(ok_button);
+
+    cancel_button.signal_clicked().connect(sigc::mem_fun(*this, &DeletingInstanceDialog::on_cancel));
+    ok_button.signal_clicked().connect(sigc::mem_fun(*this, &DeletingInstanceDialog::on_ok));
     
     show_all_children();
+}
+
+void DeletingInstanceDialog::on_cancel()
+{
+    cancel = true;
+    hide();
+}
+
+void DeletingInstanceDialog::on_ok()
+{
+    cancel = false;
+    hide();
+}
+
+bool DeletingInstanceDialog::cancelled()
+{
+    return cancel;
 }
