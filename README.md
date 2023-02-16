@@ -1,5 +1,5 @@
 # endless-sky-thrower
-Endless Sky Launcher made with GTK
+Endless Sky Launcher made with GTKMM
 
 The name is a joke, since it's, you know, a _launcher_
 
