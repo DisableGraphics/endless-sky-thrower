@@ -5,7 +5,7 @@
 #I could make a vm, but my computer is really low on space
 
 OSXCROSS_MP_INC=1
-PREFIX=x86_64-apple-darwin17-
+PREFIX=x86_64-apple-darwin22-
 CC=$(PREFIX)cc
 CXX=$(PREFIX)c++
 CFLAGS=-c -Wall

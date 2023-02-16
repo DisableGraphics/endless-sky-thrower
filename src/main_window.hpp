@@ -18,7 +18,7 @@
 //Removes the instance from the list of instances using its name
 inline void remove_instance(std::string name, std::vector<Instance> *instances, std::vector<Gtk::Button> *instance_buttons, Gtk::Window * window)
 {
-    for (int i{0}; i < instances->size(); i++)
+    for (unsigned long i{0}; i < instances->size(); i++)
     {
         if(instances->at(i).get_name() == name)
         {

@@ -157,7 +157,7 @@ inline void aria2Thread(Gtk::ProgressBar * progress_bar, std::string type, std::
         file_prefix = "EndlessSky-macos.zip";
     }
     //I like that I can output the file to a specific filename, so I don't have to rename it later.
-    std::string out_str = ("download/" + instance_name + "/" + file_prefix).c_str();
+    std::string out_str = ("download/" + instance_name + "/" + file_prefix);
     char outfilename[FILENAME_MAX];
     strcpy(outfilename, out_str.c_str());
     //Begin the download
