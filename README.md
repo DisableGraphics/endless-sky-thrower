@@ -35,4 +35,4 @@ Someone who can help me port this to macOS
 # Copyright
 This program is licensed under the GNU General Public License v3.0. You can find the full license [here](https://www.gnu.org/licenses/gpl-3.0.en.html). <br>
 The icon is made by Michael Zahniser and is licensed under CC-BY-SA-4.0. You can find the full license [here](https://creativecommons.org/licenses/by-sa/4.0/legalcode). <br>
-[nlohmann's json library](https://github.com/nlohmann/json), the library I'm using for JSON parsing [MIT License](https://mit-license.org/)
+[nlohmann's json library](https://github.com/nlohmann/json), the library I'm using for JSON parsing is licensed under the terms of the  [MIT License](https://mit-license.org/)
