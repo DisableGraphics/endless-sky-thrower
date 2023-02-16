@@ -30,3 +30,27 @@ void InformationDialog::quit()
 {
     hide();
 }
+
+DeletingInstanceDialog::DeletingInstanceDialog(std::string message)
+{
+    set_titlebar(title_bar);
+    title_bar.set_title("Deleting instance");
+    title_bar.set_show_close_button();
+    resize(100, 100);
+    set_modal(true);
+    set_transient_for(*this);
+    set_position(Gtk::WIN_POS_CENTER_ALWAYS);
+
+    label.set_markup(message);
+    label.set_justify(Gtk::JUSTIFY_CENTER);
+    label.set_line_wrap(true);
+    cancel_button.set_label("Cancel");
+    ok_button.set_label("OK");
+    icon.set_from_icon_name("dialog-information", Gtk::ICON_SIZE_DIALOG);
+    get_content_area()->pack_start(icon);
+    get_content_area()->pack_start(label);
+    get_content_area()->pack_start(cancel_button);
+    get_content_area()->pack_start(ok_button);
+    
+    show_all_children();
+}
