@@ -32,7 +32,7 @@ MyWindow::MyWindow()
     
     m_plugins_vbox.set_border_width(10);
 
-    m_notebook.signal_switch_page().connect(sigc::bind(sigc::ptr_fun(on_switch_page),&m_plugins_vbox, generated_plugins));
+    m_notebook.signal_switch_page().connect(sigc::mem_fun(*this, &MyWindow::on_switch_page));
     this->signal_delete_event().connect(sigc::bind(sigc::ptr_fun(&on_deelete_event),  &instances));
     set_titlebar(titlebar);
     titlebar.set_show_close_button();
@@ -80,4 +80,24 @@ Gtk::ProgressBar * MyWindow::get_progress()
 std::vector<Gtk::Button> * MyWindow::get_instance_buttons()
 {
     return &instance_buttons;
+}
+
+//Generates the plugins page, so it doesn't have to be generated at the first run, slowing down the initial load
+void MyWindow::on_switch_page(Gtk::Widget * page, guint number)
+{
+    if(number == 1 && !generated_plugins)
+    {
+        
+        for(auto & p : global::plugins)
+        {
+            bool is_installed = is_plugin_installed(p.name);
+            if(is_installed)
+            {
+                std::cout << "[INFO] Plugin " << p.name << " is installed." << std::endl;
+            }
+            m_plugins_vbox.pack_start(*Gtk::manage(new PluginInstance(p, is_installed)));
+        }
+        m_plugins_vbox.show_all();
+        generated_plugins = true;
+    }
 }
