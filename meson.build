@@ -12,5 +12,5 @@ elif host_machine.system() == 'darwin'
 else #Generic UNIX
     install_dir = '/usr/bin'
 endif
-sources = ['src/instance.cpp', 'src/secondary_dialogs.cpp', 'src/main.cpp', 'src/dialogs.cpp']
+sources = ['src/main_window.cpp', 'src/instance.cpp', 'src/secondary_dialogs.cpp', 'src/main.cpp', 'src/dialogs.cpp']
 executable('esthrower', sources, dependencies : [gtkdep, curldep, archivedep], install : true, install_dir : install_dir)
