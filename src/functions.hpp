@@ -3,7 +3,7 @@
 #include <gtkmm.h>
 #include <filesystem>
 #include "global_variables.hpp"
-#include "aria.hpp"
+#include "downloader.hpp"
 #include "gtkmm/dialog.h"
 #include <thread>
 #include <unistd.h>

@@ -7,7 +7,7 @@
 #include <unistd.h>
 #include <curl/curl.h>
 
-#include "aria.hpp"
+#include "downloader.hpp"
 #include "gtkmm/dialog.h"
 #include "gtkmm/progressbar.h"
 #include "gtkmm/window.h"

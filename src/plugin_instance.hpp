@@ -2,7 +2,7 @@
 #include <filesystem>
 #include <gtkmm.h>
 #include <curl/curl.h>
-#include "aria.hpp"
+#include "downloader.hpp"
 #include <memory>
 #include <system_error>
 #include <thread>

@@ -5,7 +5,7 @@
 #include <sstream>
 #include <string>
 #include <vector>
-#include "aria.hpp"
+#include "downloader.hpp"
 #include "dialogs.hpp"
 #include "functions.hpp"
 #include "global_variables.hpp"

@@ -2,7 +2,7 @@
 #include <filesystem>
 #include <gtkmm.h>
 #include <iostream>
-#include "aria.hpp"
+#include "downloader.hpp"
 #include "functions.hpp"
 #include "sigc++/adaptors/bind.h"
 #include "sigc++/functors/ptr_fun.h"
@@ -35,7 +35,7 @@ class Instance : public Gtk::VBox
     //Deletes everything related to this instance
     void get_rekt();
     void download();
-    
+
   private:
     Gtk::Window * window;
     Gtk::ProgressBar * global_prog;
