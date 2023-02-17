@@ -33,6 +33,21 @@ int main(int argc, char* argv[])
 		std::ofstream lock_file("/tmp/esthrower.lock");
 		lock_file.close();
 	}
+	#elif _WIN32
+	//Put a esthrower.lock file in the temp folder
+	if(std::filesystem::exists(std::filesystem::temp_directory_path().string() + "/esthrower.lock"))
+	{
+		InformationDialog dialog("Error", "An instance of ESThrower is already running.\nExiting...", true);
+		dialog.run();
+
+		std::cout << "The program is already running. Exiting..." << std::endl;
+		return -1;
+	}
+	else
+	{
+		std::ofstream lock_file(std::filesystem::temp_directory_path().string() + "/esthrower.lock");
+		lock_file.close();
+	}
 	#endif
   	curl_global_init(CURL_GLOBAL_ALL);
 	
