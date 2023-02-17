@@ -125,7 +125,7 @@ inline void uninstall_plugin(PluginInstance * plugin_id)
     else if(os == "Windows")
     {
         home_folder = std::getenv("APPDATA");
-        plugins_folder = "%AppData%\\endless-sky\\plugins";
+        plugins_folder = home_folder + "\\endless-sky\\plugins";
     }
     else
     {
