@@ -1,5 +1,5 @@
-#include "instance.hpp"
-#include "gtkmm/hvbox.h"
+#include "instance_widget.hpp"
+
 Instance::Instance(std::string name, std::string _type, std::string _version, Gtk::ProgressBar * global_prog, Gtk::Window * win, bool autoupdate, bool untouched)
 {
     this->global_prog = global_prog;

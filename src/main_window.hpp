@@ -10,7 +10,7 @@
 #include "functions.hpp"
 #include "global_variables.hpp"
 #include "gtkmm/hvbox.h"
-#include "instance.hpp"
+#include "instance_widget.hpp"
 #include "plugin_instance.hpp"
 #include "functions.hpp"
 #include "icon/esthrower.xpm"

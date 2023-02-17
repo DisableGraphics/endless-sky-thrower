@@ -1,7 +1,4 @@
 #include "main_window.hpp"
-#include "gtkmm/progressbar.h"
-#include "instance.hpp"
-#include <vector>
 
 //The MyWindow constructor. Puts the widgets in place and connects the signals
 MyWindow::MyWindow()
