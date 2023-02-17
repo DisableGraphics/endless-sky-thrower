@@ -1,17 +1,19 @@
 #include "plugin_instance.hpp"
 #include "global_variables.hpp"
 
-void PluginInstance::set_installed()
+void PluginInstance::set_installed(bool installed)
 {
-    install_button.set_label("Update");
-    pack_start(uninstall_button);
-    show_all();
-}
-
-void PluginInstance::set_uninstalled()
-{
-    install_button.set_label("Install");
-    remove(uninstall_button);
+    if(installed)
+    {
+        install_button.set_label("Update");
+        pack_start(uninstall_button);
+    }
+    else 
+    {
+        install_button.set_label("Install");
+        remove(uninstall_button);
+    }
+    
     show_all();
 }
 

@@ -13,11 +13,11 @@ class PluginInstance : public Gtk::VBox
 {
     public:
         PluginInstance(Plugin_ID id, bool is_installed);
+        //Getters
         Plugin_ID get_plugin_id();
-        
-        void set_installed();
-        void set_uninstalled();
         Gtk::Spinner * get_spinner();
+        
+        void set_installed(bool installed = true);
         
     private:
         Plugin_ID plugin_id;
@@ -141,5 +141,5 @@ inline void uninstall_plugin(PluginInstance * plugin_id)
         d.run();
     }
 
-    plugin_id->set_uninstalled();
+    plugin_id->set_installed(false);
 }
