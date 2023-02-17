@@ -12,4 +12,5 @@ elif host_machine.system() == 'darwin'
 else #Generic UNIX
     install_dir = '/usr/bin'
 endif
-executable('esthrower', ['src/secondary_dialogs.cpp', 'src/main.cpp'], dependencies : [gtkdep, curldep, archivedep], install : true, install_dir : install_dir)
+sources = ['src/secondary_dialogs.cpp', 'src/main.cpp', 'src/dialogs.cpp']
+executable('esthrower', sources, dependencies : [gtkdep, curldep, archivedep], install : true, install_dir : install_dir)
