@@ -1,4 +1,5 @@
 #include "plugin_instance.hpp"
+#include "global_variables.hpp"
 
 void PluginInstance::set_installed()
 {
@@ -65,4 +66,14 @@ PluginInstance::PluginInstance(Plugin_ID id, bool is_installed)
     //The last one is the separators
     pack_end(separator);
     show_all();
+}
+
+Plugin_ID PluginInstance::get_plugin_id()
+{
+    return plugin_id;
+}
+
+Gtk::Spinner * PluginInstance::get_spinner()
+{
+    return &spinner;
 }

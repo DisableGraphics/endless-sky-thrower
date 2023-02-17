@@ -13,16 +13,12 @@ class PluginInstance : public Gtk::VBox
 {
     public:
         PluginInstance(Plugin_ID id, bool is_installed);
-        Plugin_ID get_plugin_id()
-        {
-            return plugin_id;
-        }
+        Plugin_ID get_plugin_id();
+        
         void set_installed();
         void set_uninstalled();
-        Gtk::Spinner * get_spinner()
-        {
-            return &spinner;
-        }
+        Gtk::Spinner * get_spinner();
+        
     private:
         Plugin_ID plugin_id;
         Gtk::Label name_label;
