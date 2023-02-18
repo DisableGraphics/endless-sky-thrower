@@ -30,7 +30,7 @@ MyWindow::MyWindow()
     m_plugins_vbox.set_border_width(10);
 
     m_notebook.signal_switch_page().connect(sigc::mem_fun(*this, &MyWindow::on_switch_page));
-    this->signal_delete_event().connect(sigc::bind(sigc::ptr_fun(&on_deelete_event),  &instances));
+    this->signal_delete_event().connect(sigc::mem_fun(*this, &MyWindow::on_deleete_event));
     set_titlebar(titlebar);
     titlebar.set_show_close_button();
     set_title("ESThrower");
@@ -58,7 +58,7 @@ void MyWindow::add_instance(std::string name, std::string type, std::string vers
     instance_buttons.push_back(Gtk::Button());
     tmp->pack_start(instance_buttons[instance_buttons.size()-1]);
     instance_buttons[instance_buttons.size() - 1].set_image_from_icon_name("user-trash-symbolic");
-    instance_buttons[instance_buttons.size() - 1].signal_clicked().connect(sigc::bind(sigc::ptr_fun(&remove_instance), instances[instances.size()-1].get_name(), &instances, &instance_buttons, (Gtk::Window *)this));
+    instance_buttons[instance_buttons.size() - 1].signal_clicked().connect(sigc::bind(sigc::mem_fun(*this, &MyWindow::remove_instance), instances[instances.size()-1].get_name()));
     instance_buttons[instance_buttons.size() - 1].set_tooltip_text("Delete instance");
     instances[instances.size() - 1].show_all();
     m_vbox.pack_start(instances[instances.size() - 1]);
@@ -97,4 +97,76 @@ void MyWindow::on_switch_page(Gtk::Widget * page, guint number)
         m_plugins_vbox.show_all();
         generated_plugins = true;
     }
+}
+
+//Fired when the window is closed. Saves the instances and closes the window.
+//Note the use of the 'deelete' word, since the on_delete_event is an already defined function in Gtk::Window
+bool MyWindow::on_deleete_event(GdkEventAny* any_event)
+{
+    //Delete the temporary file /tmp/esthrower.lock
+    std::remove("/tmp/esthrower.lock");
+
+    save_instances();
+    return false;
+}
+
+//Saves the instances to the disk as JSON objects
+void MyWindow::save_instances()
+{
+    if(instances.size() == 0)
+    {
+        std::ofstream file("instances.json");
+        file << "[]";
+        file.close();
+        return;
+    }
+    nlohmann::json j;
+    for (auto & p : instances)
+    {
+        j += nlohmann::json::object({
+            {"name", p.get_name()},
+            {"version", p.get_version()},
+            {"type", p.get_typee()},
+            {"vanilla", p.get_untouched()},
+            {"autoupdate", p.get_autoupdate()}
+        });
+    }
+    std::ofstream file;
+    file.open("download/instances.json");
+    file << j.dump(4);
+    file.close();
+}
+
+//Removes the instance from the list of instances using its name
+inline void MyWindow::remove_instance(std::string name)
+{
+    
+    for (unsigned long i{0}; i < instances.size(); i++)
+    {
+        if(instances.at(i).get_name() == name)
+        {
+            std::cout << "[INFO] Deleting instance " << name << std::endl;
+            DeletingInstanceDialog dialog("Are you sure you want to delete " + name + "?\nThis will remove the instance.");
+            dialog.run();
+            if(dialog.cancelled())
+            {
+                break;
+            }
+            instances.erase(instances.begin() + i);
+            instance_buttons.erase(instance_buttons.begin() + i);
+
+            DeletingInstanceDialog dialog2("Do you want to delete the instance folder?\nThis will remove the instance folder and all its contents.");
+            dialog2.run();
+            if(dialog2.cancelled())
+            {
+                break;
+            }
+            if(std::filesystem::exists("instances/" + name))
+            {
+                instances.at(i).get_rekt();
+            }
+            break;
+        }
+    }
+    show_all();
 }

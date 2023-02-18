@@ -16,61 +16,6 @@
 #include "icon/esthrower.xpm"
 #include "secondary_dialogs.hpp"
 
-//Removes the instance from the list of instances using its name
-inline void remove_instance(std::string name, std::vector<Instance> *instances, std::vector<Gtk::Button> *instance_buttons, Gtk::Window * window)
-{
-    for (unsigned long i{0}; i < instances->size(); i++)
-    {
-        if(instances->at(i).get_name() == name)
-        {
-            std::cout << "[INFO] Deleting instance " << name << std::endl;
-            DeletingInstanceDialog dialog("Are you sure you want to delete " + name + "?\nThis will remove the instance.");
-            dialog.run();
-            if(dialog.cancelled())
-            {
-                break;
-            }
-            instances->erase(instances->begin() + i);
-            instance_buttons->erase(instance_buttons->begin() + i);
-
-            DeletingInstanceDialog dialog2("Do you want to delete the instance folder?\nThis will remove the instance folder and all its contents.");
-            dialog2.run();
-            if(dialog2.cancelled())
-            {
-                break;
-            }
-            instances->at(i).get_rekt();
-            break;
-        }
-    }
-    window->show_all();
-}
-//Saves the instances to the disk as JSON objects
-inline void save_instances(std::vector<Instance> * instances)
-{
-    if(instances->size() == 0)
-    {
-        std::ofstream file("instances.json");
-        file << "[]";
-        file.close();
-        return;
-    }
-    nlohmann::json j;
-    for (auto & p : *instances)
-    {
-        j += nlohmann::json::object({
-            {"name", p.get_name()},
-            {"version", p.get_version()},
-            {"type", p.get_typee()},
-            {"vanilla", p.get_untouched()},
-            {"autoupdate", p.get_autoupdate()}
-        });
-    }
-    std::ofstream file;
-    file.open("download/instances.json");
-    file << j.dump(4);
-    file.close();
-}
 //Loads the instances from the disk
 inline std::vector<Instance> read_instances(Gtk::ProgressBar * global_prog, Gtk::Window * win)
 {
@@ -98,16 +43,6 @@ inline std::vector<Instance> read_instances(Gtk::ProgressBar * global_prog, Gtk:
     file.close();
     return instances;
 }
-//Fired when the window is closed. Saves the instances and closes the window.
-//Note the use of the 'deelete' word, since the on_delete_event is an already defined function in Gtk::Window
-inline bool on_deelete_event(GdkEventAny* any_event, std::vector<Instance> *instances)
-{
-    //Delete the temporary file /tmp/esthrower.lock
-    std::remove("/tmp/esthrower.lock");
-
-    save_instances(instances);
-    return false;
-}
 //The main window. Inherits from Gtk::Window
 class MyWindow : public Gtk::Window
 {
@@ -131,6 +66,11 @@ class MyWindow : public Gtk::Window
     Gtk::VBox m_plugins_vbox;
     Gtk::ScrolledWindow m_plugins_scrolled_window, m_instances_scrolled_window;
     bool generated_plugins{false};
+
+    void save_instances();
+    void remove_instance(std::string name);
+
+    bool on_deleete_event(GdkEventAny* any_event);
     void on_switch_page(Gtk::Widget *page, guint number);
 };
 
