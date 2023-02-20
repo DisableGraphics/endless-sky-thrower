@@ -17,4 +17,5 @@ class ChangelogWidget : public Gtk::VBox
         Gtk::TextView changelog_textview;
         Gtk::Separator separator;
         std::string changelog;
+        std::string files_dir = "download/";
 };

@@ -3,9 +3,12 @@
 
 ChangelogWidget::ChangelogWidget()
 {
-    std::cout << "[INFO] Downloading changelog..." << std::endl;
-    download_changelog();
-    std::cout << "[INFO] Changelog downloaded." << std::endl;
+    if(std::filesystem::exists(files_dir + "changelog.txt"))
+    {
+        std::cout << "[INFO] Downloading changelog..." << std::endl;
+        download_changelog();
+        std::cout << "[INFO] Changelog downloaded." << std::endl;
+    }
     set_changelog();
 }
 
@@ -17,7 +20,7 @@ void ChangelogWidget::download_changelog()
     FILE *fp;
     if (curl) 
     {
-        fp = fopen("download/changelog.txt","wb");
+        fp = fopen((files_dir + "changelog.txt").c_str(), "wb");
         curl_easy_setopt(curl, CURLOPT_URL, "https://raw.githubusercontent.com/endless-sky/endless-sky/master/changelog");
         curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
         //The write_data function will write the downloaded data to a file
