@@ -51,24 +51,30 @@ int main(int argc, char* argv[])
 	#endif
   	curl_global_init(CURL_GLOBAL_ALL);
 	
-	
+	std::cout << "[INFO] Starting ESThrower..." << std::endl;
 	MyWindow win;
-	download_plugin_json();
+	
 	
 	if(!std::filesystem::exists("download"))
 	{
 		std::filesystem::create_directory("download");
 	}
+	download_plugin_json();
 	Gtk::ProgressBar * global_prog = win.get_progress();
 	Gtk::Window * window = &win;
-	for(auto & p : read_instances(global_prog, window))
+	std::cout << "Checking for instances... ";
+	if(std::filesystem::exists("download/instances.json"))
 	{
-		win.add_instance(p.get_name(), p.get_typee(), p.get_version(), window, p.get_autoupdate(), p.get_untouched());
-		if(p.get_autoupdate() == true)
+		for(auto & p : read_instances(global_prog, window))
 		{
-			p.download();
+			win.add_instance(p.get_name(), p.get_typee(), p.get_version(), window, p.get_autoupdate(), p.get_untouched());
+			if(p.get_autoupdate() == true)
+			{
+				p.download();
+			}
 		}
 	}
+	std::cout << "Done" << std::endl;
 	win.show_all();
 
 	app->run(win);
