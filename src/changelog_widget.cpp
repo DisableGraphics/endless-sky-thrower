@@ -59,7 +59,6 @@ void ChangelogWidget::set_changelog()
 
     scrolled_window.add(changelog_textview);
     scrolled_window.set_policy(Gtk::POLICY_AUTOMATIC, Gtk::POLICY_AUTOMATIC);
-    scrolled_window.set_size_request(500, 300);
     scrolled_window.set_shadow_type(Gtk::SHADOW_ETCHED_IN);
     pack_start(changelog_label, Gtk::PACK_SHRINK);
     pack_start(separator, Gtk::PACK_SHRINK);
