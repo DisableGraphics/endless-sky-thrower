@@ -7,13 +7,11 @@
 #include <vector>
 #include "downloader.hpp"
 #include "dialogs.hpp"
-#include "functions.hpp"
 #include "global_variables.hpp"
 #include "gtkmm/hvbox.h"
 #include "instance_widget.hpp"
 #include "plugin_instance.hpp"
 #include "changelog_widget.hpp"
-#include "functions.hpp"
 #include "icon/esthrower.xpm"
 #include "secondary_dialogs.hpp"
 
