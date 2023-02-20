@@ -3,12 +3,11 @@
 
 ChangelogWidget::ChangelogWidget()
 {
-    if(std::filesystem::exists(files_dir + "changelog.txt"))
-    {
-        std::cout << "[INFO] Downloading changelog..." << std::endl;
-        download_changelog();
-        std::cout << "[INFO] Changelog downloaded." << std::endl;
-    }
+
+    std::cout << "[INFO] Downloading changelog..." << std::endl;
+    download_changelog();
+    std::cout << "[INFO] Changelog downloaded." << std::endl;
+    
     set_changelog();
 }
 
