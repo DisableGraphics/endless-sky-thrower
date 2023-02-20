@@ -12,6 +12,7 @@
 #include "gtkmm/hvbox.h"
 #include "instance_widget.hpp"
 #include "plugin_instance.hpp"
+#include "changelog_widget.hpp"
 #include "functions.hpp"
 #include "icon/esthrower.xpm"
 #include "secondary_dialogs.hpp"
@@ -65,6 +66,7 @@ class MyWindow : public Gtk::Window
     Gtk::Notebook m_notebook;
     Gtk::VBox m_plugins_vbox;
     Gtk::ScrolledWindow m_plugins_scrolled_window, m_instances_scrolled_window;
+    ChangelogWidget changelog;
     bool generated_plugins{false};
 
     void save_instances();

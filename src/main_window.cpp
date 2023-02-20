@@ -6,6 +6,10 @@ MyWindow::MyWindow()
     add(m_notebook);
     m_notebook.append_page(m_instances_scrolled_window, "Instances");
     m_instances_scrolled_window.add(m_vbox);
+    
+    m_notebook.append_page(m_plugins_scrolled_window, "Plugins");
+
+    m_notebook.append_page(changelog, "Changelog");
 
     //Set the icon
     auto p = Gdk::Pixbuf::create_from_xpm_data(esthrower);
@@ -24,7 +28,6 @@ MyWindow::MyWindow()
     m_open_data_folder_button.signal_clicked().connect(sigc::ptr_fun(&open_data_folder));
     m_new_instance_button.signal_clicked().connect(sigc::bind(sigc::ptr_fun(new_dialog), this));
 
-    m_notebook.append_page(m_plugins_scrolled_window, "Plugins");
     m_plugins_scrolled_window.add(m_plugins_vbox);
     
     m_plugins_vbox.set_border_width(10);
