@@ -42,10 +42,17 @@ void ChangelogWidget::download_changelog()
         fclose(fp);
     }
     std::ifstream changelog_file("download/changelog.txt");
-    std::string line;
-    while (std::getline(changelog_file, line))
+    if(changelog_file.good())
     {
-        changelog += line + "\n";
+        std::string line;
+        while (std::getline(changelog_file, line))
+        {
+            changelog += line + "\n";
+        }
+    }
+    else 
+    {
+        changelog = "Unable to download changelog. Please check your internet connection.";
     }
 
 }
