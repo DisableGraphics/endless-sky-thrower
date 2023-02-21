@@ -63,7 +63,7 @@ inline void download_plugin(PluginInstance * plugin_id)
      
     std::filesystem::create_directory("plugins/");
     std::string extract_command;
-    std::string os = get_OS();
+    std::string os = Functions::get_OS();
     std::string plugins_folder;
     std::string options;
     if(os == "Linux")
@@ -92,10 +92,10 @@ inline void download_plugin(PluginInstance * plugin_id)
     system((extract_command + "download/" + plugin_id->get_plugin_id().name + ".zip\"" + options + "plugins/").c_str());
     std::filesystem::remove_all("download/" + plugin_id->get_plugin_id().name + ".zip");
     
-    std::string folder = get_first_folder("plugins/");
-    if(get_number_of_files_in_folder(folder) == 1)
+    std::string folder = Functions::get_first_folder("plugins/");
+    if(Functions::get_number_of_files_in_folder(folder) == 1)
     {
-        folder = get_first_folder(folder);
+        folder = Functions::get_first_folder(folder);
     }
     std::filesystem::copy(folder, plugins_folder + "/" + plugin_id->get_plugin_id().name, std::filesystem::copy_options::recursive | std::filesystem::copy_options::overwrite_existing);
     
@@ -115,7 +115,7 @@ inline void uninstall_plugin(PluginInstance * plugin_id)
 {
     plugin_id->get_spinner()->start();
     std::string home_folder; 
-    std::string os = get_OS();
+    std::string os = Functions::get_OS();
     std::string plugins_folder;
     if(os == "Linux")
     {

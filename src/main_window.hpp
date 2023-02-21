@@ -93,7 +93,7 @@ inline void download_pr(std::string pr_number, Gtk::ProgressBar * progress_bar, 
     //Now that the Discord ppl said tha we were gonna use cmake...
     command = "cd download/" + pr_number + " && cmake . && cmake --build .";
     system(command.c_str());
-    if(get_OS() != "Windows")
+    if(Functions::get_OS() != "Windows")
     {
         InformationDialog d("Download complete", "The PR has been downloaded and compiled. You can now launch it.", true);
         d.show_all();
@@ -138,7 +138,7 @@ inline void new_dialog(MyWindow * window)
 //Opens the data folder in the file manager
 inline void open_data_folder()
 {
-    std::string os{get_OS()};
+    std::string os{Functions::get_OS()};
     std::string command;
     if(os == "Linux")
     {

@@ -65,7 +65,7 @@ Instance::Instance(std::string name, std::string _type, std::string _version, Gt
 
     labels_box.pack_start(folder);
     folder.set_image_from_icon_name("folder-symbolic");
-    folder.signal_clicked().connect(sigc::bind<std::string>(sigc::ptr_fun(&open_folder), get_name(), get_typee(), get_version()));
+    folder.signal_clicked().connect(sigc::bind<std::string>(sigc::ptr_fun(Functions::open_folder), get_name(), get_typee(), get_version()));
     folder.set_tooltip_text("Open instance folder");
     if(type != "Custom")
     {
@@ -76,14 +76,14 @@ Instance::Instance(std::string name, std::string _type, std::string _version, Gt
     update.set_tooltip_text("Update instance");
     labels_box.pack_start(launch);
     launch.set_image_from_icon_name("media-playback-start");
-    launch.signal_clicked().connect(sigc::bind<std::string>(sigc::ptr_fun(&launch_game), get_name(), type, version, untouched));
+    launch.signal_clicked().connect(sigc::bind<std::string>(sigc::ptr_fun(Functions::launch_game), get_name(), type, version, untouched));
     launch.set_tooltip_text("Launch the game");
     if(!get_untouched())
     {
         labels_box.pack_start(run_without_plugins);
     }
     run_without_plugins.set_image_from_icon_name("video-display-symbolic");
-    run_without_plugins.signal_clicked().connect(sigc::bind<std::string>(sigc::ptr_fun(&launch_game), get_name(), type, version, true));
+    run_without_plugins.signal_clicked().connect(sigc::bind<std::string>(sigc::ptr_fun(Functions::launch_game), get_name(), type, version, true));
     //Put a small label when hovering over the button
     run_without_plugins.set_tooltip_text("Launch the game without plugins");
 

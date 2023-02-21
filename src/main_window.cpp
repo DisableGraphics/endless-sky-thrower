@@ -90,7 +90,7 @@ void MyWindow::on_switch_page(Gtk::Widget * page, guint number)
         
         for(auto & p : global::plugins)
         {
-            bool is_installed = is_plugin_installed(p.name);
+            bool is_installed = Functions::is_plugin_installed(p.name);
             if(is_installed)
             {
                 std::cout << "[INFO] Plugin " << p.name << " is installed." << std::endl;

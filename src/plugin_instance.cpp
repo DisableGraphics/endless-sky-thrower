@@ -35,7 +35,10 @@ PluginInstance::PluginInstance(Plugin_ID id, bool is_installed)
 
     version_label.set_markup("<b>Version: </b>" + plugin_id.version);
 
-    str_replace(plugin_id.author, "&", "&amp;");
+    if(!Functions::str_replace(plugin_id.author, "&", "&amp;"))
+    {
+        std::cout << "[WARN] Error replacing & with &amp;" << std::endl;
+    }
     author_label.set_markup("<b>Author: </b>" + plugin_id.author);
 
     description_label.set_markup("<b>Description: </b>" + plugin_id.description);

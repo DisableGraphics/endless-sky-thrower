@@ -1,4 +1,5 @@
 #pragma once
+#include "gtkmm/progressbar.h"
 #include <thread>
 #define CURL_STATICLIB
 #include <iostream>
@@ -9,22 +10,22 @@
 #include <nlohmann/json.hpp>
 #include <fstream>
 #include "secondary_dialogs.hpp"
+#include "functions.hpp"
 //Every 300 milliseconds, the progress bar will be updated. The progress bar would crash if done with less interval time
 //on my third gen Intel shitty laptop
 #define MINIMAL_PROGRESS_FUNCTIONALITY_INTERVAL 300000
 
-inline std::string get_OS()
+class Downloader
 {
-    #ifdef _WIN32
-        return "Windows";
-    #elif __APPLE__ || __MACH__
-        return "MacOS";
-    #elif __linux__
-        return "Linux";
-    #else
-        return "Other";
-    #endif
-}
+    public:
+        Downloader();
+        //Downloads the instance
+        void download_instance();
+    private:
+        Gtk::ProgressBar * progress_bar;
+        Gtk::Window * window;
+};
+
 typedef struct
 {
     Gtk::ProgressBar *progress_bar;
@@ -102,7 +103,7 @@ inline void aria2Thread(Gtk::ProgressBar * progress_bar, std::string type, std::
 
     std::string url;
 
-    std::string os = get_OS();
+    std::string os = Functions::get_OS();
     url = "https://github.com/endless-sky/endless-sky/releases/download/";
 
     std::string instance_v = instance_version;
