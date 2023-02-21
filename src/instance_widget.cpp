@@ -1,4 +1,6 @@
 #include "instance_widget.hpp"
+#include "downloader.hpp"
+#include "functions.hpp"
 
 Instance::Instance(std::string name, std::string _type, std::string _version, Gtk::ProgressBar * global_prog, Gtk::Window * win, bool autoupdate, bool untouched)
 {
@@ -72,7 +74,7 @@ Instance::Instance(std::string name, std::string _type, std::string _version, Gt
         labels_box.pack_start(update);
     }
     update.set_image_from_icon_name("go-down");
-    update.signal_clicked().connect(sigc::bind(sigc::ptr_fun(&update_instance), global_prog, window, get_name(), get_typee(), get_version(), autoupdate, untouched));
+    
     update.set_tooltip_text("Update instance");
     labels_box.pack_start(launch);
     launch.set_image_from_icon_name("media-playback-start");
@@ -86,6 +88,7 @@ Instance::Instance(std::string name, std::string _type, std::string _version, Gt
     run_without_plugins.signal_clicked().connect(sigc::bind<std::string>(sigc::ptr_fun(Functions::launch_game), get_name(), type, version, true));
     //Put a small label when hovering over the button
     run_without_plugins.set_tooltip_text("Launch the game without plugins");
+    update.signal_clicked().connect(sigc::mem_fun(*this, &Instance::download));
 
     show_all();
 }
@@ -146,8 +149,12 @@ void Instance::get_rekt()
 
 void Instance::download()
 {
-    std::cout << "Downloading " << get_name() << " " << get_version() << std::endl;
-    std::thread t(std::bind(aria2Thread, global_prog, get_typee(), get_name(), get_version(), window, false));
+    std::cout << "\nDownloading " << get_name() << " " << get_version() << std::endl;
+    
+    //This crashes with "Fatal error: glibc detected an invalid stdio handle"
+    //May be related to the fact that download_instance is a static function
+    Downloader d;
+    std::thread t(&Downloader::download_instance, &d, global_prog, get_typee(), get_name(), get_version(), window);
     t.detach();
 }
 

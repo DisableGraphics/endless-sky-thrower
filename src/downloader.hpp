@@ -1,30 +1,18 @@
 #pragma once
 #include "gtkmm/progressbar.h"
+#include <cstddef>
 #include <thread>
 #define CURL_STATICLIB
 #include <iostream>
 #include <gtkmm.h>
 #include <filesystem>
-#include "global_variables.hpp"
 #include <curl/curl.h>
 #include <nlohmann/json.hpp>
 #include <fstream>
-#include "secondary_dialogs.hpp"
-#include "functions.hpp"
+
 //Every 300 milliseconds, the progress bar will be updated. The progress bar would crash if done with less interval time
 //on my third gen Intel shitty laptop
 #define MINIMAL_PROGRESS_FUNCTIONALITY_INTERVAL 300000
-
-class Downloader
-{
-    public:
-        Downloader();
-        //Downloads the instance
-        void download_instance();
-    private:
-        Gtk::ProgressBar * progress_bar;
-        Gtk::Window * window;
-};
 
 typedef struct
 {
@@ -37,264 +25,25 @@ struct myprogress {
   CURL *curl;
   Tw tw;
 };
-//Will write the downloaded data to a file
-inline size_t write_data(void *ptr, size_t size, size_t nmemb, FILE *stream) 
+
+class Downloader
 {
-    size_t written = fwrite(ptr, size, nmemb, stream);
-    return written;
-}
-//This function is used to update the progress bar. Will set the progress bar to a fraction of the download progress.
-static int xferinfo(void *p,
-                    curl_off_t dltotal, curl_off_t dlnow,
-                    curl_off_t ultotal, curl_off_t ulnow)
-{
-    struct myprogress *myp = (struct myprogress *)p;
-    CURL *curl = myp->curl;
-    curl_off_t curtime = 0;
- 
-    curl_easy_getinfo(curl, CURLINFO_TOTAL_TIME_T, &curtime);
- 
-    
-    //Every 300 milliseconds, the progress bar will update. This is to prevent the program from crashing, since it
-    //would update the progress bar too fast for my shitty laptop to process correctly.
-    if((curtime - myp->lastruntime) >= MINIMAL_PROGRESS_FUNCTIONALITY_INTERVAL) 
-    {
-        myp->lastruntime = curtime;
-        if(dlnow != 0 && dltotal != 0)
-        {
-            if(myp->tw.window->is_active())
-            {
-                myp->tw.progress_bar->set_fraction((double)dlnow / (double)dltotal);
-            }
-        }
-    }
-    return 0;
-}
-//This function returns the instance name without the first "v" in the version number
-//Used (mostly) for windows, since the ES naming scheme sucks
-inline std::string instance_version_minus_v(std::string instance_version)
-{
-    std::string version = instance_version;
-    version.erase(0, 1);
-    return version;
-}
-//This is a thread used to: download the instance and update the progress bar
-inline void aria2Thread(Gtk::ProgressBar * progress_bar, std::string type, std::string instance_name, std::string instance_version, Gtk::Window * window, bool different_naming_scheme = false)
-{
-    while(global::lock)
-    {
-        //Wait until the lock is released
-        std::chrono::milliseconds dura( 1000 );
-        std::this_thread::sleep_for(dura);
-    }
-    if(!global::lock)
-    {
-        global::lock = true;
-    }
-    if(!std::filesystem::exists("download/" + instance_name))
-    {
-        std::filesystem::create_directory("download/" + instance_name);
-    }
-
-    CURL *curl;
-    FILE *fp;
-    CURLcode res;
-    struct myprogress prog;
-
-    std::string url;
-
-    std::string os = Functions::get_OS();
-    url = "https://github.com/endless-sky/endless-sky/releases/download/";
-
-    std::string instance_v = instance_version;
-    bool upper_case = false;
-    if(type == "Continuous")
-    {
-        instance_v = "continuous";
-        upper_case = true;
+    public:
+        Downloader();
+        //Downloads the instance
+        void download_instance(Gtk::ProgressBar * progress_bar, std::string type, std::string instance_name, std::string instance_version, Gtk::Window * window);
+        static void download_plugin_json();
+        static size_t write_data(void *ptr, size_t size, size_t nmemb, FILE *stream);
+        static void download(std::string url, std::string file_name, bool custom_user_agent);
         
-        //different_naming_scheme = true;
+    private:
         
-    }
-    std::string file_prefix;
-    if(os == "Linux")
-    {
-        if(different_naming_scheme)
-        {
-            if(instance_v == "continuous")
-                url += instance_v + "/Endless_Sky-" + instance_v +"-x86_64.AppImage";
-            else
-                url += instance_v + "/endless-sky-x86_64-" + instance_v + ".AppImage";
-        }
-        else 
-        {
-            if(instance_v == "continuous")
-                url += instance_v + "/endless-sky-x86_64-" + instance_v + ".AppImage";
-            else
-                url += instance_v + "/endless-sky-amd64-" + instance_v + ".AppImage";
-        }
+        static int xferinfo(void *p, curl_off_t dltotal, curl_off_t dlnow, curl_off_t ultotal, curl_off_t ulnow);
+        std::string get_url(std::string instance_type, std::string instance_version);
+        std::string get_response_from_api(std::string release_id);
+        std::string get_release_id(std::string instance_type, std::string instance_version);
+        std::string gen_file_prefix();
         
-        file_prefix = "endless-sky.AppImage";
-    }
-    else if(os == "Windows")
-    {
-        std::string es{upper_case? "EndlessSky" : "endless-sky"};
-        
-        if(different_naming_scheme)
-        {
-            url += instance_v + "/" + es + "-win64-" + instance_v + ".zip";
-        }
-        else 
-        {
-            url += instance_v + "/" + es + "-win64-" + instance_version_minus_v(instance_v) + ".zip";
-        }
-        file_prefix = "EndlessSky-win64.zip";
-    }
-    else //MacOS
-    {
-        std::string es{upper_case? "EndlessSky" : "endless-sky"};
-    
-        url += instance_v + "/" + es + "-macos-" + instance_v + ".zip";
-        file_prefix = "EndlessSky-macos.zip";
-    }
-    //I like that I can output the file to a specific filename, so I don't have to rename it later.
-    std::string out_str = ("download/" + instance_name + "/" + file_prefix);
-    char outfilename[FILENAME_MAX];
-    strcpy(outfilename, out_str.c_str());
-    //Begin the download
-    curl = curl_easy_init();
-    if (curl) 
-    {
-        prog.lastruntime = 0;
-        prog.curl = curl;
-        prog.tw.window = window;
-        prog.tw.progress_bar = progress_bar;
-        fp = fopen(outfilename,"wb");
-        curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
-        curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
-        //The write_data function will write the downloaded data to a file
-        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_data);
-        curl_easy_setopt(curl, CURLOPT_WRITEDATA, fp);
-        curl_easy_setopt(curl, CURLOPT_XFERINFOFUNCTION, xferinfo);
-        /* pass the struct pointer into the xferinfo function */
-        //Note: xferinfo is used to update the progress bar
-        curl_easy_setopt(curl, CURLOPT_XFERINFODATA, &prog);
-        curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 0L);
-
-        if(res != CURLE_OK)
-        {
-            fprintf(stderr, "%s\n", curl_easy_strerror(res));
-        }
-
-        res = curl_easy_perform(curl);
-        /* always cleanup */
-        curl_easy_cleanup(curl);
-        fclose(fp);
-    }
-    std::ifstream verification;
-    verification.open(outfilename);
-    std::string contents;
-    verification >> contents;
-    verification.close();
-    if(contents == "Not")
-    {
-        std::cout << "[WARN] Download failed due to incorrect naming scheme. Retrying..." << std::endl;
-        //I need to redownload the file using another naming scheme
-        global::lock = false;
-        aria2Thread(progress_bar, type, instance_name, instance_version, window, true);
-    }
-    else
-    {
-        std::cout << "[INFO] Verified correctness of download. Proceeding with next operation." << std::endl;
-    }
-    //Lol they changed the naming scheme for the continuous builds and this created a lot of dialog instances
-    if(!different_naming_scheme /*|| type == "Continuous"*/)
-    {
-        //Dialog to notify the user that the download is complete
-        //This dialog bugs on windows, so I'm disabling it for now
-        #ifndef _WIN32
-        InformationDialog * dialog = new InformationDialog("Download Complete", "The instance has been downloaded correctly. You can now launch the game.");
-        dialog->show_all();
-        dialog->run();
-        #endif
-        
-        while(!window->is_active())
-        {
-            //Wait for the window to be visible
-            sleep(1);
-        }
-        progress_bar->set_fraction(0);
-        #ifndef _WIN32
-        delete dialog;
-        #endif
-    }
-    global::lock = false;
-}
-
-//Downloads and populates the list of plugins
-inline void download_plugin_json()
-{
-    //Raw json url
-    std::string url = "https://raw.githubusercontent.com/EndlessSkyCommunity/endless-sky-plugins/master/generated/plugins.json";
-
-    //Download the json file
-    CURL *curl;
-    FILE *fp;
-    CURLcode res;
-    curl = curl_easy_init();
-    if (curl) 
-    {
-        fp = fopen("download/plugins.json","wb");
-        curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
-        curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
-        //The write_data function will write the downloaded data to a file
-        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_data);
-        curl_easy_setopt(curl, CURLOPT_WRITEDATA, fp);
-        res = curl_easy_perform(curl);
-        /* always cleanup */
-        curl_easy_cleanup(curl);
-        fclose(fp);
-    }
-    //Get the size of the json file to test if it was downloaded correctly. If it is 0, then the download failed. (No internet)
-    std::ifstream verification;
-    verification.open("download/plugins.json");
-    verification.seekg(0, std::ios::end);
-    int size = verification.tellg();
-    verification.close();
-
-    if(size == 0)
-    {
-        std::cout << "[WARN] Download of plugins.json file failed. If there's an internet connection, please try again" << std::endl;
-        return;
-    }
-    
+};
 
 
-    nlohmann::json j;
-    std::ifstream i("download/plugins.json");
-    i >> j;
-    std::string plugin_name;
-    std::string plugin_version;
-    std::string plugin_url;
-    std::string plugin_description;
-    std::string plugin_author;
-    std::string plugin_homepage;
-    std::string plugin_license;
-    std::string plugin_short_description;
-    
-    //Populate the plugins vector
-    for (auto& element : j)
-    {
-        plugin_name = element["name"];
-        plugin_version = element["version"];
-        plugin_url = element["url"];
-        plugin_description = element["description"];
-        plugin_short_description = element["shortDescription"];
-        plugin_license = element["license"];
-        plugin_author = element["authors"];
-        plugin_homepage = element["homepage"];
-    
-        global::plugins.push_back({plugin_name, plugin_author, plugin_version, plugin_description, plugin_short_description, plugin_homepage, plugin_license, plugin_url});
-    }
-    
-}

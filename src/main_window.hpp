@@ -5,7 +5,6 @@
 #include <sstream>
 #include <string>
 #include <vector>
-#include "downloader.hpp"
 #include "dialogs.hpp"
 #include "global_variables.hpp"
 #include "gtkmm/hvbox.h"

@@ -13,34 +13,9 @@ ChangelogWidget::ChangelogWidget()
 
 void ChangelogWidget::download_changelog()
 {
-    CURL *curl;
-    CURLcode res;
-    curl = curl_easy_init();
-    FILE *fp;
-    if (curl) 
-    {
-        fp = fopen((files_dir + "changelog.txt").c_str(), "wb");
-        curl_easy_setopt(curl, CURLOPT_URL, "https://raw.githubusercontent.com/endless-sky/endless-sky/master/changelog");
-        curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
-        //The write_data function will write the downloaded data to a file
-        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_data);
-        curl_easy_setopt(curl, CURLOPT_WRITEDATA, fp);
-        //curl_easy_setopt(curl, CURLOPT_XFERINFOFUNCTION, xferinfo);
-        /* pass the struct pointer into the xferinfo function */
-        //Note: xferinfo is used to update the progress bar
-        //curl_easy_setopt(curl, CURLOPT_XFERINFODATA, &prog);
-        curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 0L);
-
-        if(res != CURLE_OK)
-        {
-            fprintf(stderr, "%s\n", curl_easy_strerror(res));
-        }
-
-        res = curl_easy_perform(curl);
-        /* always cleanup */
-        curl_easy_cleanup(curl);
-        fclose(fp);
-    }
+    const std::string changelog_url = "https://raw.githubusercontent.com/endless-sky/endless-sky/master/changelog";
+    Downloader::download(changelog_url, (files_dir + "changelog.txt"), false);
+    
     std::ifstream changelog_file("download/changelog.txt");
     if(changelog_file.good())
     {

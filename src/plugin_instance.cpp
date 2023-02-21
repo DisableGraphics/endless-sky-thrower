@@ -1,5 +1,6 @@
 #include "plugin_instance.hpp"
 #include "functions.hpp"
+#include "downloader.hpp"
 #include "global_variables.hpp"
 
 void PluginInstance::set_installed(bool installed)
@@ -62,7 +63,7 @@ PluginInstance::PluginInstance(Plugin_ID id, bool is_installed)
     pack_start(description_label);
     pack_start(install_button);
     uninstall_button.signal_clicked().connect([&](){std::thread t(std::bind(uninstall_plugin, this)); t.detach();});
-    install_button.signal_clicked().connect([&](){std::thread t(std::bind(download_plugin, this)); t.detach();});
+    install_button.signal_clicked().connect(sigc::mem_fun(*this, &PluginInstance::download_plugin));
     if(is_installed)
     {
         pack_start(uninstall_button);
@@ -83,4 +84,67 @@ Plugin_ID PluginInstance::get_plugin_id()
 Gtk::Spinner * PluginInstance::get_spinner()
 {
     return &spinner;
+}
+
+//Download the plugin
+void PluginInstance::download_plugin()
+{
+    get_spinner()->start();
+    std::cout << "[INFO] Downloading plugin " << get_plugin_id().name << std::endl;
+    //Raw plugin url
+    std::string url = get_plugin_id().url;
+
+    //Download the plugin
+    Downloader::download(url, "download/" + get_plugin_id().name + ".zip", false);
+    std::cout << "[INFO] Downloaded plugin " << get_plugin_id().name << std::endl;
+    std::string home_folder;
+     
+    std::filesystem::create_directory("plugins/");
+    std::string extract_command;
+    std::string os = Functions::get_OS();
+    std::string plugins_folder;
+    std::string options;
+    if(os == "Linux")
+    {
+        options = " -d ";
+        home_folder = std::getenv("HOME");
+        extract_command = "unzip -o \"";
+        plugins_folder = home_folder + "/.local/share/endless-sky/plugins";
+    }
+    else if(os == "Windows")
+    {
+        options = " -o";
+        
+        home_folder = std::getenv("APPDATA");
+        extract_command = "7za x -y \"";
+        plugins_folder = home_folder + "\\endless-sky\\plugins";
+    }
+    else
+    {
+        options = " -d ";
+        //Does this work for macOS? I don't have a mac to test it on (*cries in poor*)
+        extract_command = "unzip -o \"";
+        plugins_folder = home_folder + "/Library/Application Support/endless-sky/plugins/";
+    }
+    std::cout << extract_command + "download/" + get_plugin_id().name + ".zip\"" + options + "plugins/" << std::endl;
+    system((extract_command + "download/" + get_plugin_id().name + ".zip\"" + options + "plugins/").c_str());
+    std::filesystem::remove_all("download/" + get_plugin_id().name + ".zip");
+    
+    std::string folder = Functions::get_first_folder("plugins/");
+    if(Functions::get_number_of_files_in_folder(folder) == 1)
+    {
+        folder = Functions::get_first_folder(folder);
+    }
+    std::filesystem::copy(folder, plugins_folder + "/" + get_plugin_id().name, std::filesystem::copy_options::recursive | std::filesystem::copy_options::overwrite_existing);
+    
+    std::filesystem::remove_all("plugins/");
+
+    get_spinner()->stop();
+    //For some kind of reason, these dialogs completely freeze the program on windows
+    if(os != "Windows")
+    {
+        InformationDialog d("Plugin installed", "The plugin has been installed successfully");
+        d.show_all();
+        d.run();
+    }
 }

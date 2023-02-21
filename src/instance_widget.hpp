@@ -3,9 +3,6 @@
 #include <gtkmm.h>
 #include <iostream>
 #include "downloader.hpp"
-#include "functions.hpp"
-#include "sigc++/adaptors/bind.h"
-#include "sigc++/functors/ptr_fun.h"
 //Instance class, used to store the instance data. Inherits from Gtk::HBox
 class Instance : public Gtk::VBox
 {
@@ -53,10 +50,5 @@ class Instance : public Gtk::VBox
     Gtk::Button run_without_plugins;
     Gtk::Label untouched_label;
     Gtk::HBox labels_box;
+    
 };
-//This would not fire even if the button was pressed
-inline void update_instance(Gtk::ProgressBar * prog, Gtk::Window * win, std::string name, std::string type, std::string version, bool autoupdate, bool untouched)
-{
-    std::thread t(std::bind(aria2Thread, prog, type, name, version, win, autoupdate));
-    t.detach();
-}

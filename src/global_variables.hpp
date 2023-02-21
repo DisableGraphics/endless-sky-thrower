@@ -18,6 +18,7 @@ typedef struct
 
     std::string url;
 } Plugin_ID;
+
 namespace global
 {
     inline bool lock;

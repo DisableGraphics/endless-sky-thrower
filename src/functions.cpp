@@ -1,4 +1,6 @@
 #include "functions.hpp"
+#include "global_variables.hpp"
+#include "secondary_dialogs.hpp"
 
 std::string Functions::get_OS()
 {
@@ -246,4 +248,13 @@ bool Functions::str_replace(std::string& str, const std::string& from, const std
 	}
     str.replace(start_pos, from.length(), to);
     return true;
+}
+
+//This function returns the instance name without the first "v" in the version number
+//Used (mostly) for windows, since the ES naming scheme sucks
+std::string Functions::instance_version_minus_v(std::string instance_version)
+{
+    std::string version = instance_version;
+    version.erase(0, 1);
+    return version;
 }

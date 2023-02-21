@@ -52,14 +52,15 @@ int main(int argc, char* argv[])
   	curl_global_init(CURL_GLOBAL_ALL);
 	
 	std::cout << "[INFO] Starting ESThrower..." << std::endl;
-	MyWindow win;
+	
 	
 	
 	if(!std::filesystem::exists("download"))
 	{
 		std::filesystem::create_directory("download");
 	}
-	download_plugin_json();
+	MyWindow win;
+	Downloader::download_plugin_json();
 	Gtk::ProgressBar * global_prog = win.get_progress();
 	Gtk::Window * window = &win;
 	std::cout << "Checking for instances... ";
