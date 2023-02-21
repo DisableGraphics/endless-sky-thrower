@@ -2,6 +2,7 @@
 #include "functions.hpp"
 #include "downloader.hpp"
 #include "global_variables.hpp"
+#include <thread>
 
 void PluginInstance::set_installed(bool installed)
 {
@@ -63,7 +64,7 @@ PluginInstance::PluginInstance(Plugin_ID id, bool is_installed)
     pack_start(description_label);
     pack_start(install_button);
     uninstall_button.signal_clicked().connect([&](){std::thread t(std::bind(uninstall_plugin, this)); t.detach();});
-    install_button.signal_clicked().connect(sigc::mem_fun(*this, &PluginInstance::download_plugin));
+    install_button.signal_clicked().connect(sigc::mem_fun(*this, &PluginInstance::download));
     if(is_installed)
     {
         pack_start(uninstall_button);
@@ -84,6 +85,13 @@ Plugin_ID PluginInstance::get_plugin_id()
 Gtk::Spinner * PluginInstance::get_spinner()
 {
     return &spinner;
+}
+
+//Signal handler for the download button
+void PluginInstance::download()
+{
+    std::thread download_thread(&PluginInstance::download_plugin, this);
+    download_thread.detach();
 }
 
 //Download the plugin

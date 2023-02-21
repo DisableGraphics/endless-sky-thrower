@@ -232,13 +232,22 @@ std::string Downloader::get_release_id(std::string instance_type, std::string in
     //Parse the json file
     nlohmann::json j = nlohmann::json::parse(response);
     int release_id{-1};
-    for(auto& element : j)
+    try
     {
-        if(element["tag_name"] == instance_version)
+        for(auto& element : j)
         {
-            release_id = element["id"];
-            break;
+            if(element["tag_name"] == instance_version)
+            {
+                release_id = element["id"];
+                break;
+            }
         }
+    } 
+    catch(std::exception& e)
+    {
+        std::cout << "[ERROR] " << e.what() << std::endl;
+        std::cout << "[ERROR] Could not find Release ID." << std::endl;
+        std::cout << "[ERROR] Have you been rate limited?" << std::endl;
     }
     std::filesystem::remove("download/releases.json");
     std::cout << "[INFO] Release ID: " << release_id << std::endl;
@@ -301,17 +310,25 @@ std::string Downloader::get_url(std::string instance_type, std::string instance_
     {
         searchfor = "mac";
     }
-    for(auto& element : response)
-    {
-        for(auto& asset : element)
+
+    try{
+        for(auto& element : response)
         {
-            if(asset["name"].dump().find(searchfor) != std::string::npos)
+            for(auto& asset : element)
             {
-                download_url = asset["browser_download_url"];
-                std::cout << "[INFO] Download URL: " << download_url << std::endl;
-                break;
+                if(asset["name"].dump().find(searchfor) != std::string::npos)
+                {
+                    download_url = asset["browser_download_url"];
+                    std::cout << "[INFO] Download URL: " << download_url << std::endl;
+                    break;
+                }
             }
         }
+    } catch(std::exception& e)
+    {
+        std::cout << "[ERROR] " << e.what() << std::endl;
+        std::cout << "[ERROR] Could not find download URL." << std::endl;
+        std::cout << "[ERROR] Have you been rate limited?" << std::endl;
     }
     std::cout << "[INFO] Download URL: " << download_url << std::endl;
     return download_url;
@@ -331,7 +348,7 @@ void Downloader::download(std::string url, std::string file_name, bool custom_us
         if(custom_user_agent)
         {
             curl_easy_setopt(curl, CURLOPT_ACCEPT_ENCODING, "application/vnd.github+json");
-            curl_easy_setopt(curl, CURLOPT_USERAGENT, "ESThrower/1.0");
+            curl_easy_setopt(curl, CURLOPT_USERAGENT, "ESThrower by DisableGraphics/1.0");
         }
         curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_data);

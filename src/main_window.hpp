@@ -13,6 +13,7 @@
 #include "changelog_widget.hpp"
 #include "icon/esthrower.xpm"
 #include "secondary_dialogs.hpp"
+#include "nlohmann/json.hpp"
 
 //Loads the instances from the disk
 inline std::vector<Instance> read_instances(Gtk::ProgressBar * global_prog, Gtk::Window * win)

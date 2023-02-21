@@ -32,6 +32,7 @@ class PluginInstance : public Gtk::VBox
         Gtk::Separator separator;
         Gtk::Spinner spinner;
         Gtk::Separator separator2;
+        void download();
 };
 
 inline void uninstall_plugin(PluginInstance * plugin_id)

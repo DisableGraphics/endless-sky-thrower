@@ -1,6 +1,21 @@
 #include "instance_widget.hpp"
 #include "downloader.hpp"
 #include "functions.hpp"
+#include "gtkmm/progressbar.h"
+#include "sigc++/functors/mem_fun.h"
+#include "sigc++/functors/ptr_fun.h"
+
+//As much as I'd like to put this in the Intance class, I can't. For some reason, it doesn't work.
+//No idea why. I've tried with:
+// - sigc::mem_fun(*this, &Instance::download_signal_handler)
+// - marking it as static
+// - marking it as static and using sigc::ptr_fun (Errors out)
+//What really makes this baffling is that the mem_fun thingy works on other classes.
+void download_signal_handler(Gtk::ProgressBar * global_prog, std::string type, std::string name, std::string version, Gtk::Window * window)
+{
+    //std::cout << "[INFO] Pressed download button for: " << get_name() << std::endl;
+    Instance::download_priv(global_prog, type, name, version, window);
+}
 
 Instance::Instance(std::string name, std::string _type, std::string _version, Gtk::ProgressBar * global_prog, Gtk::Window * win, bool autoupdate, bool untouched)
 {
@@ -88,10 +103,12 @@ Instance::Instance(std::string name, std::string _type, std::string _version, Gt
     run_without_plugins.signal_clicked().connect(sigc::bind<std::string>(sigc::ptr_fun(Functions::launch_game), get_name(), type, version, true));
     //Put a small label when hovering over the button
     run_without_plugins.set_tooltip_text("Launch the game without plugins");
-    update.signal_clicked().connect(sigc::mem_fun(*this, &Instance::download));
+    update.signal_clicked().connect(sigc::bind(sigc::ptr_fun(download_signal_handler), global_prog, type, name, version, window));
 
     show_all();
 }
+
+
 
 void Instance::set_untouched(bool untouched)
 {
@@ -149,12 +166,14 @@ void Instance::get_rekt()
 
 void Instance::download()
 {
-    std::cout << "\nDownloading " << get_name() << " " << get_version() << std::endl;
-    
-    //This crashes with "Fatal error: glibc detected an invalid stdio handle"
-    //May be related to the fact that download_instance is a static function
+    download_priv(global_prog, get_typee(), get_name(), get_version(), window);
+}
+
+void Instance::download_priv(Gtk::ProgressBar * global_prog, std::string type, std::string name, std::string version, Gtk::Window * window)
+{    
     Downloader d;
-    std::thread t(&Downloader::download_instance, &d, global_prog, get_typee(), get_name(), get_version(), window);
+    //It's funny that I need an object to call a non-static function
+    std::thread t(&Downloader::download_instance, &d, global_prog, type, name, version, window);
     t.detach();
 }
 
