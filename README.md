@@ -14,11 +14,12 @@ The name is a joke, since it's, you know, a _launcher_
     - Autoupdate (Only available for Continuous instances, automatically downloads the build everytime the launcher is opened)
 
 - Plugin installer and uninstaller
+- Changelog viewer
 
 # Compilation
 Install the dependencies: 
-- Arch: ```yay -S curl gtkmm3 git-extras meson```
-- Ubuntu/Debian: ```sudo apt install libgkmm-3.0-dev curl git-extras meson```
+- Arch: ```yay -S curl gtkmm3 git-extras meson libarchive```
+- Ubuntu/Debian: ```sudo apt install libgkmm-3.0-dev curl git-extras meson libarchive-dev```
 
 Then, just run: 
 ```
