@@ -8,17 +8,18 @@ The name is a joke, since it's, you know, a _launcher_
     - Continuous builds (Fresh from the releases section)
     - Stable builds (If you don't want to install a potentially unstable release)
     - Custom builds (Just point to the executable and voilà)
-    - PRs (Write the PR number and ESThrower will do everything for you)
+    - PRs (Write the PR number and ESThrower will compile and setup it for you)
 - These installations can have optional requirements:
     - Vanilla (Won't get polluted with plugins)
     - Autoupdate (Only available for Continuous instances, automatically downloads the build everytime the launcher is opened)
 
 - Plugin installer and uninstaller
+- Changelog viewer
 
 # Compilation
 Install the dependencies: 
-- Arch: ```yay -S curl gtkmm3 git-extras meson```
-- Ubuntu/Debian: ```sudo apt install libgkmm-3.0-dev curl git-extras meson```
+- Arch: ```yay -S curl gtkmm3 git-extras meson libarchive```
+- Ubuntu/Debian: ```sudo apt install libgkmm-3.0-dev curl git-extras meson libarchive-dev```
 
 Then, just run: 
 ```
