@@ -2,7 +2,6 @@
 #include "downloader.hpp"
 #include "functions.hpp"
 #include "gtkmm/progressbar.h"
-#include "sigc++/functors/mem_fun.h"
 #include "sigc++/functors/ptr_fun.h"
 
 //As much as I'd like to put this in the Intance class, I can't. For some reason, it doesn't work.

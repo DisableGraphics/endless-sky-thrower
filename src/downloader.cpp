@@ -241,10 +241,9 @@ std::string Downloader::get_release_id(std::string instance_type, std::string in
     //Parse the json file
     nlohmann::json j = nlohmann::json::parse(response);
     int release_id{-1};
-    if(response.find("rate limit") != std::string::npos)
+    if(response.find("API rate limit exceeded") != std::string::npos)
     {
-        sleep(10);
-        return get_release_id(instance_type, instance_version);
+        return "Rate Limited";
     }
     try
     {
