@@ -258,3 +258,12 @@ std::string Functions::instance_version_minus_v(std::string instance_version)
     version.erase(0, 1);
     return version;
 }
+
+bool Functions::has_v(std::string instance_version)
+{
+    if(instance_version[0] == 'v')
+    {
+        return true;
+    }
+    return false;
+}

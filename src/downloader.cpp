@@ -151,6 +151,15 @@ void Downloader::download_instance(Gtk::ProgressBar * progress_bar, std::string 
         global::lock = false;
         return;
     }
+    else if(url == "Rate Limited")
+    {
+        InformationDialog warns("Error",
+        (std::string)"You have been rate limited by GitHub. Please wait a few minutes and try again.\n",
+        true);
+        warns.run();
+        global::lock = false;
+        return;
+    }
 
     
     std::string file_prefix = gen_file_prefix();
@@ -232,6 +241,11 @@ std::string Downloader::get_release_id(std::string instance_type, std::string in
     //Parse the json file
     nlohmann::json j = nlohmann::json::parse(response);
     int release_id{-1};
+    if(response.find("rate limit") != std::string::npos)
+    {
+        sleep(10);
+        return get_release_id(instance_type, instance_version);
+    }
     try
     {
         for(auto& element : j)
@@ -248,8 +262,15 @@ std::string Downloader::get_release_id(std::string instance_type, std::string in
         std::cout << "[ERROR] " << e.what() << std::endl;
         std::cout << "[ERROR] Could not find Release ID." << std::endl;
         std::cout << "[ERROR] Have you been rate limited?" << std::endl;
+
+        //check if the user has been rate limited
+        if(response.find("API rate limit exceeded") != std::string::npos)
+        {
+            return "Rate Limited";
+        }
     }
-    std::filesystem::remove("download/releases.json");
+    
+    //std::filesystem::remove("download/releases.json");
     std::cout << "[INFO] Release ID: " << release_id << std::endl;
     return release_id == -1 ? "None" : std::to_string(release_id);
 }
@@ -259,6 +280,10 @@ std::string Downloader::get_response_from_api(std::string release_id)
     if(release_id == "None")
     {
         return "None";
+    }
+    else if(release_id == "Rate Limited")
+    {
+        return "Rate Limited";
     }
     std::string url = "https://api.github.com/repos/endless-sky/endless-sky/releases/" + release_id + "/assets";
     std::string response{""};
@@ -285,7 +310,10 @@ std::string Downloader::get_url(std::string instance_type, std::string instance_
     }
     else
     {
-        instance_version = "v" + instance_version;
+        if(!Functions::has_v(instance_version))
+        {
+            instance_version = "v" + instance_version;
+        }
     }
     std::string url = "https://api.github.com/repos/endless-sky/endless-sky/releases/tags/" + instance_version;
     std::string os = Functions::get_OS();
@@ -294,6 +322,10 @@ std::string Downloader::get_url(std::string instance_type, std::string instance_
     if(response_str == "None")
     {
         return "None";
+    }
+    else if(response_str == "Rate Limited")
+    {
+        return "Rate Limited";
     }
     nlohmann::json response{nlohmann::json::parse(response_str)};
     std::string download_url{"None"};
