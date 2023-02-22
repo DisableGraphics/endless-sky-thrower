@@ -1,4 +1,6 @@
 #include "main_window.hpp"
+#include "gtkmm/window.h"
+#include "nlohmann/json.hpp"
 
 //The MyWindow constructor. Puts the widgets in place and connects the signals
 MyWindow::MyWindow()
@@ -25,8 +27,8 @@ MyWindow::MyWindow()
     m_vbox.set_spacing(10);
     m_vbox.set_valign(Gtk::ALIGN_START);
     m_vbox.pack_start(progress);
-    m_open_data_folder_button.signal_clicked().connect(sigc::ptr_fun(&open_data_folder));
-    m_new_instance_button.signal_clicked().connect(sigc::bind(sigc::ptr_fun(new_dialog), this));
+    m_open_data_folder_button.signal_clicked().connect(sigc::ptr_fun(&Functions::open_data_folder));
+    m_new_instance_button.signal_clicked().connect(sigc::mem_fun(*this, &MyWindow::new_dialog));
 
     m_plugins_scrolled_window.add(m_plugins_vbox);
     
@@ -172,4 +174,93 @@ inline void MyWindow::remove_instance(std::string name)
     }
     show_all();
     save_instances();
+}
+//Loads the instances from the disk
+std::vector<Instance> MyWindow::read_instances()
+{
+    std::vector<Instance> instances;
+    std::ifstream file;
+    file.open("download/instances.json");
+    if(file.is_open())
+    {
+        nlohmann::json j;
+        file >> j;
+        for (auto & p : j)
+        {
+            std::string name = p["name"];
+            std::string version = p["version"];
+            std::string type = p["type"];
+            bool autoupdate = p["autoupdate"];
+            bool untouched = p["vanilla"];
+            instances.push_back(Instance(name, type, version, &progress, (Gtk::Window*)this, autoupdate, untouched));
+        }
+    }
+    else
+    {
+        std::cout << "[WARN] instances.json file not found. Resuming normal operation." << std::endl;
+    }
+    file.close();
+    return instances;
+}
+
+void MyWindow::download_pr(std::string pr_number)
+{
+    while(global::lock)
+    {
+        sleep(1);
+    }
+    global::lock = true;
+    std::string command{"git clone https://github.com/endless-sky/endless-sky.git download/" + pr_number
+    + " && cd download/" + pr_number+ " && git pr " + pr_number};
+    
+    system(command.c_str());
+    if(is_active())
+    {
+        progress.set_fraction(0.5);
+    }
+    //Now compile it
+    //Now that the Discord ppl said tha we were gonna use cmake...
+    command = "cd download/" + pr_number + " && cmake . && cmake --build .";
+    system(command.c_str());
+    if(Functions::get_OS() != "Windows")
+    {
+        InformationDialog d("Download complete", "The PR has been downloaded and compiled. You can now launch it.", true);
+        d.show_all();
+        d.run();
+    }
+    global::lock = false;
+    while(!is_active())
+    {
+        sleep(1);
+    }
+    progress.set_fraction(0);
+}
+
+//Creates a new dialog for creating a new instance
+//Taking into account the pointer fuckery done here, I'm amazed this worked the first time I tried it.
+void MyWindow::new_dialog()
+{
+    NewInstanceDialog dialog;
+    dialog.set_title("New Instance");
+    dialog.add_button("OK", 1);
+    dialog.show_all();
+    switch(dialog.run())
+    {
+        case 1:
+            if(dialog.get_selected() == 3)
+            {
+                //It is a custom PR. We need to download it, compile it and set the version to the path of the executable
+                std::thread t(&MyWindow::download_pr, this, dialog.get_version());
+                t.detach();
+                add_instance(dialog.get_naem(), dialog.get_typee(), "download/" + dialog.get_version() + "/endless-sky", (Gtk::Window*) this, dialog.auto_update(), dialog.vanilla());
+                
+                InformationDialog d("Download started", "The download has started. Do not close the launcher while the download and compilation lasts.", true);
+                d.show_all();
+                d.run();
+
+                return;
+            }
+            add_instance(dialog.get_naem(), dialog.get_typee(), dialog.get_version(), (Gtk::Window*) this, dialog.auto_update(), dialog.vanilla());
+            break;
+    }
 }

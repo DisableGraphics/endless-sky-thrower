@@ -267,3 +267,23 @@ bool Functions::has_v(std::string instance_version)
     }
     return false;
 }
+
+//Opens the data folder in the file manager
+void Functions::open_data_folder()
+{
+    std::string os{Functions::get_OS()};
+    std::string command;
+    if(os == "Linux")
+    {
+        command = "xdg-open " + std::string(getenv("HOME")) + "/.local/share/endless-sky/";
+    }
+    else if(os == "Windows")
+    {
+        command = "explorer " + std::string(getenv("APPDATA")) + "\\endless-sky\\";
+    }
+    else if(os == "MacOS")
+    {
+        command = "open " + std::string(getenv("HOME")) + "/Library/Application Support/endless-sky/";
+   }
+    system(command.c_str());
+}

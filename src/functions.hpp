@@ -23,7 +23,7 @@ class Functions
 
 		static void open_folder(std::string instance_name, std::string instance_type, std::string instance_version);
 		static void launch_game(const std::string &instance_name, const std::string &instance_type, const std::string &instance_version, bool untouched);
-		
+		static void open_data_folder();
 
 	private:
 };
