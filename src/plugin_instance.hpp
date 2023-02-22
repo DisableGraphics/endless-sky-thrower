@@ -18,6 +18,7 @@ class PluginInstance : public Gtk::VBox
         
         void set_installed(bool installed = true);
         void download_plugin();
+        void uninstall_plugin();
         
     private:
         Plugin_ID plugin_id;
@@ -33,37 +34,5 @@ class PluginInstance : public Gtk::VBox
         Gtk::Spinner spinner;
         Gtk::Separator separator2;
         void download();
+        void uninstall();
 };
-
-inline void uninstall_plugin(PluginInstance * plugin_id)
-{
-    plugin_id->get_spinner()->start();
-    std::string home_folder; 
-    std::string os = Functions::get_OS();
-    std::string plugins_folder;
-    if(os == "Linux")
-    {
-        home_folder = std::getenv("HOME");
-        plugins_folder = home_folder + "/.local/share/endless-sky/plugins";
-    }
-    else if(os == "Windows")
-    {
-        home_folder = std::getenv("APPDATA");
-        plugins_folder = home_folder + "\\endless-sky\\plugins";
-    }
-    else
-    {
-        home_folder = std::getenv("HOME");
-        plugins_folder = home_folder + "/Library/Application Support/endless-sky/plugins/";
-    }
-    std::filesystem::remove_all(plugins_folder + "/" + plugin_id->get_plugin_id().name);
-    plugin_id->get_spinner()->stop();
-    if(os != "Windows")
-    {
-        InformationDialog d("Plugin uninstalled", "The plugin has been uninstalled successfully");
-        d.show_all();
-        d.run();
-    }
-
-    plugin_id->set_installed(false);
-}

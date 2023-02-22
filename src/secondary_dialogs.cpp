@@ -36,7 +36,7 @@ DeletingInstanceDialog::DeletingInstanceDialog(std::string message)
     set_titlebar(title_bar);
     title_bar.set_title("Deleting instance");
     title_bar.set_show_close_button();
-    resize(100, 100);
+    resize(200, 100);
     set_modal(true);
     set_transient_for(*this);
     set_position(Gtk::WIN_POS_CENTER_ALWAYS);

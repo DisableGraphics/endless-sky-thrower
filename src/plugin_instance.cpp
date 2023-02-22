@@ -2,6 +2,7 @@
 #include "functions.hpp"
 #include "downloader.hpp"
 #include "global_variables.hpp"
+#include "sigc++/functors/mem_fun.h"
 #include <thread>
 
 void PluginInstance::set_installed(bool installed)
@@ -63,7 +64,7 @@ PluginInstance::PluginInstance(Plugin_ID id, bool is_installed)
     pack_start(author_label);
     pack_start(description_label);
     pack_start(install_button);
-    uninstall_button.signal_clicked().connect([&](){std::thread t(std::bind(uninstall_plugin, this)); t.detach();});
+    uninstall_button.signal_clicked().connect(sigc::mem_fun(*this, &PluginInstance::uninstall));
     install_button.signal_clicked().connect(sigc::mem_fun(*this, &PluginInstance::download));
     if(is_installed)
     {
@@ -85,6 +86,13 @@ Plugin_ID PluginInstance::get_plugin_id()
 Gtk::Spinner * PluginInstance::get_spinner()
 {
     return &spinner;
+}
+
+//Signal handler for the uninstall button
+void PluginInstance::uninstall()
+{
+    std::thread uninstall_thread(&PluginInstance::uninstall_plugin, this);
+    uninstall_thread.detach();
 }
 
 //Signal handler for the download button
@@ -155,4 +163,37 @@ void PluginInstance::download_plugin()
         d.show_all();
         d.run();
     }
+}
+
+void PluginInstance::uninstall_plugin()
+{
+    get_spinner()->start();
+    std::string home_folder; 
+    std::string os = Functions::get_OS();
+    std::string plugins_folder;
+    if(os == "Linux")
+    {
+        home_folder = std::getenv("HOME");
+        plugins_folder = home_folder + "/.local/share/endless-sky/plugins";
+    }
+    else if(os == "Windows")
+    {
+        home_folder = std::getenv("APPDATA");
+        plugins_folder = home_folder + "\\endless-sky\\plugins";
+    }
+    else
+    {
+        home_folder = std::getenv("HOME");
+        plugins_folder = home_folder + "/Library/Application Support/endless-sky/plugins/";
+    }
+    std::filesystem::remove_all(plugins_folder + "/" + get_plugin_id().name);
+    get_spinner()->stop();
+    if(os != "Windows")
+    {
+        InformationDialog d("Plugin uninstalled", "The plugin has been uninstalled successfully");
+        d.show_all();
+        d.run();
+    }
+
+    set_installed(false);
 }
