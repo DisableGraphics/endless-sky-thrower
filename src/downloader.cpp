@@ -295,6 +295,10 @@ std::string Downloader::get_response_from_api(std::string release_id)
         response += line;
     }
     file.close();
+    if(response.find("API rate limit exceeded") != std::string::npos)
+    {
+        return "Rate Limited";
+    }
     //std::filesystem::remove("download/releases.json");
 
     return response;
