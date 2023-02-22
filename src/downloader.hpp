@@ -37,7 +37,6 @@ class Downloader
         static void download(std::string url, std::string file_name, bool custom_user_agent);
         
     private:
-        
         static int xferinfo(void *p, curl_off_t dltotal, curl_off_t dlnow, curl_off_t ultotal, curl_off_t ulnow);
         std::string get_url(std::string instance_type, std::string instance_version);
         std::string get_response_from_api(std::string release_id);
