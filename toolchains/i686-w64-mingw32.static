@@ -1,0 +1,14 @@
+[binaries]
+c = 'i686-w64-mingw32.static-gcc'
+cpp = 'i686-w64-mingw32.static-g++'
+ar = 'i686-w64-mingw32.static-ar'
+strip = 'i686-w64-mingw32.static-strip'
+pkgconfig = 'i686-w64-mingw32.static-pkg-config'
+exe_wrapper = 'wine64'
+
+[host_machine]
+system = 'windows'
+cpu_family = 'x86_64'
+cpu = 'x86_64'
+endian = 'little'
+
