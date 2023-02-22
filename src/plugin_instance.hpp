@@ -22,8 +22,6 @@ class PluginInstance : public Gtk::VBox
         
         void set_installed(bool installed = true);
 
-        
-        
     private:
         Plugin_ID plugin_id;
 
