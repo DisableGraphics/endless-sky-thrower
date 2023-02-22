@@ -118,9 +118,10 @@ void MyWindow::save_instances()
 {
     if(instances.size() == 0)
     {
-        std::ofstream file("instances.json");
+        std::ofstream file("download/instances.json");
         file << "[]";
         file.close();
+        std::cout << "[INFO] No instances to save." << std::endl;
         return;
     }
     nlohmann::json j;
@@ -155,21 +156,20 @@ inline void MyWindow::remove_instance(std::string name)
             {
                 break;
             }
-            instances.erase(instances.begin() + i);
-            instance_buttons.erase(instance_buttons.begin() + i);
-
+            
             DeletingInstanceDialog dialog2("Do you want to delete the instance folder?\nThis will remove the instance folder and all its contents.");
             dialog2.run();
-            if(dialog2.cancelled())
-            {
-                break;
-            }
-            if(std::filesystem::exists("instances/" + name))
+            bool canc = dialog2.cancelled();
+            
+            if(std::filesystem::exists("download/" + name) && !canc)
             {
                 instances.at(i).get_rekt();
             }
+            instances.erase(instances.begin() + i);
+            instance_buttons.erase(instance_buttons.begin() + i);
             break;
         }
     }
     show_all();
+    save_instances();
 }
