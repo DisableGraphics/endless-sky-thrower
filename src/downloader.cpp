@@ -5,8 +5,10 @@
 #include "global_variables.hpp"
 #include "secondary_dialogs.hpp"
 #include "functions.hpp"
+#include <cstddef>
 #include <cstdio>
 #include <curl/curl.h>
+#include <curl/easy.h>
 
 Downloader::Downloader()
 {
@@ -53,24 +55,7 @@ void Downloader::download_plugin_json()
     //Raw json url
     std::string url = "https://raw.githubusercontent.com/EndlessSkyCommunity/endless-sky-plugins/master/generated/plugins.json";
 
-    //Download the json file
-    CURL *curl;
-    FILE *fp;
-    CURLcode res;
-    curl = curl_easy_init();
-    if (curl) 
-    {
-        fp = fopen("download/plugins.json","wb");
-        curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
-        curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
-        //The write_data function will write the downloaded data to a file
-        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_data);
-        curl_easy_setopt(curl, CURLOPT_WRITEDATA, fp);
-        res = curl_easy_perform(curl);
-        /* always cleanup */
-        curl_easy_cleanup(curl);
-        fclose(fp);
-    }
+    download(url, "download/plugins.json", false);
     //Get the size of the json file to test if it was downloaded correctly. If it is 0, then the download failed. (No internet)
     std::ifstream verification;
     verification.open("download/plugins.json");
@@ -134,11 +119,6 @@ void Downloader::download_instance(Gtk::ProgressBar * progress_bar, std::string 
         std::filesystem::create_directory("download/" + instance_name);
     }
 
-    CURL *curl;
-    FILE *fp;
-    CURLcode res;
-    struct myprogress prog;
-
     std::string url{get_url(type, instance_version)};
     std::cout << "[INFO] Downloading " << instance_name << " version " << instance_version << std::endl;
     std::cout << "[INFO] Downloading from " << url << std::endl;
@@ -166,36 +146,7 @@ void Downloader::download_instance(Gtk::ProgressBar * progress_bar, std::string 
     //I like that I can output the file to a specific filename, so I don't have to rename it later.
     std::string out_str = ("download/" + instance_name + "/" + file_prefix);
     
-    //Begin the download
-    curl = curl_easy_init();
-    if (curl) 
-    {
-        prog.lastruntime = 0;
-        prog.curl = curl;
-        prog.tw.window = window;
-        prog.tw.progress_bar = progress_bar;
-        fp = fopen(out_str.c_str(),"wb");
-        curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
-        curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
-        //The write_data function will write the downloaded data to a file
-        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_data);
-        curl_easy_setopt(curl, CURLOPT_WRITEDATA, fp);
-        curl_easy_setopt(curl, CURLOPT_XFERINFOFUNCTION, xferinfo);
-        /* pass the struct pointer into the xferinfo function */
-        //Note: xferinfo is used to update the progress bar
-        curl_easy_setopt(curl, CURLOPT_XFERINFODATA, &prog);
-        curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 0L);
-
-        if(res != CURLE_OK)
-        {
-            fprintf(stderr, "%s\n", curl_easy_strerror(res));
-        }
-
-        res = curl_easy_perform(curl);
-        /* always cleanup */
-        curl_easy_cleanup(curl);
-        fclose(fp);
-    }
+    download(url, out_str, false, true, progress_bar, window);
     std::ifstream verification;
     verification.open(out_str);
     std::string contents;
@@ -229,15 +180,8 @@ std::string Downloader::get_release_id(std::string instance_type, std::string in
     //just download a json file with all the releases and find the one that matches the version
     std::string url = "https://api.github.com/repos/endless-sky/endless-sky/releases";
     std::string response{""};
-    download(url, "download/releases.json", true);
-    std::ifstream file;
-    file.open("download/releases.json");
-    std::string line;
-    while(std::getline(file, line))
-    {
-        response += line;
-    }
-    file.close();
+    download_buffered(url, response, true);
+    
     //Parse the json file
     nlohmann::json j = nlohmann::json::parse(response);
     int release_id{-1};
@@ -286,20 +230,12 @@ std::string Downloader::get_response_from_api(std::string release_id)
     }
     std::string url = "https://api.github.com/repos/endless-sky/endless-sky/releases/" + release_id + "/assets";
     std::string response{""};
-    download(url, "download/releases.json", true);
-    std::ifstream file;
-    file.open("download/releases.json");
-    std::string line;
-    while(std::getline(file, line))
-    {
-        response += line;
-    }
-    file.close();
+    download_buffered(url, response, true);
+    
     if(response.find("API rate limit exceeded") != std::string::npos)
     {
         return "Rate Limited";
     }
-    //std::filesystem::remove("download/releases.json");
 
     return response;
 }
@@ -369,21 +305,31 @@ std::string Downloader::get_url(std::string instance_type, std::string instance_
     return download_url;
 }
 
-void Downloader::download(std::string url, std::string file_name, bool custom_user_agent)
+void Downloader::download(const std::string &url, std::string file_name, bool custom_user_agent, bool xferinfo_callback, Gtk::ProgressBar * progress_bar, Gtk::Window * win)
 {
     CURL *curl;
-    FILE *fp;
     CURLcode res;
     curl = curl_easy_init();
     if (curl) 
     {
-        
+        FILE *fp;
         fp = fopen(file_name.c_str(),"wb");
         curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
         if(custom_user_agent)
         {
             curl_easy_setopt(curl, CURLOPT_ACCEPT_ENCODING, "application/vnd.github+json");
-            curl_easy_setopt(curl, CURLOPT_USERAGENT, "ESThrower by DisableGraphics/1.0");
+            curl_easy_setopt(curl, CURLOPT_USERAGENT, user_agent.c_str());
+        }
+        if(xferinfo_callback)
+        {
+            struct myprogress prog;
+            prog.lastruntime = 0;
+            prog.curl = curl;
+            prog.tw.window = win;
+            prog.tw.progress_bar = progress_bar;
+            curl_easy_setopt(curl, CURLOPT_XFERINFOFUNCTION, xferinfo);
+            curl_easy_setopt(curl, CURLOPT_XFERINFODATA, &prog);
+            curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 0L);
         }
         curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_data);
@@ -391,8 +337,47 @@ void Downloader::download(std::string url, std::string file_name, bool custom_us
         res = curl_easy_perform(curl);
         /* always cleanup */
         curl_easy_cleanup(curl);
+        if(res != CURLE_OK)
+        {
+            std::cout << "[ERROR] " << curl_easy_strerror(res) << std::endl;
+        }
+        fclose(fp);
     }
-    fclose(fp);
+    
+}
+
+size_t Downloader::write_data_buffer(void *ptr, size_t size, size_t nmemb, std::string *stream)
+{
+    int dataLength = size * nmemb;
+    stream->append((char*)ptr, dataLength);
+    return dataLength;
+}
+
+void Downloader::download_buffered(const std::string &url, std::string &buffer, bool custom_user_agent)
+{
+    CURL *curl;
+
+    CURLcode res;
+    curl = curl_easy_init();
+    if (curl) 
+    {
+        curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+        curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+        if(custom_user_agent)
+        {
+            curl_easy_setopt(curl, CURLOPT_ACCEPT_ENCODING, "application/vnd.github+json");
+            curl_easy_setopt(curl, CURLOPT_USERAGENT, user_agent.c_str());
+        }
+        curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
+        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_data_buffer);
+        curl_easy_setopt(curl, CURLOPT_WRITEDATA, &buffer);
+        res = curl_easy_perform(curl);
+        if(res != CURLE_OK)
+        {
+            std::cout << "[ERROR] " << curl_easy_strerror(res) << std::endl;
+        }
+        curl_easy_cleanup(curl);
+    }
 }
 
 std::string Downloader::gen_file_prefix()

@@ -34,7 +34,10 @@ class Downloader
         void download_instance(Gtk::ProgressBar * progress_bar, std::string type, std::string instance_name, std::string instance_version, Gtk::Window * window);
         static void download_plugin_json();
         static size_t write_data(void *ptr, size_t size, size_t nmemb, FILE *stream);
-        static void download(std::string url, std::string file_name, bool custom_user_agent);
+        static size_t write_data_buffer(void *ptr, size_t size, size_t nmemb, std::string *stream);
+        static void download(const std::string &url, std::string file_name, bool custom_user_agent, bool xferinfo_callback = false, Gtk::ProgressBar * progress_bar = nullptr, Gtk::Window * win = nullptr);
+        
+        static void download_buffered(const std::string &url, std::string &buffer, bool custom_user_agent);
         
     private:
         static int xferinfo(void *p, curl_off_t dltotal, curl_off_t dlnow, curl_off_t ultotal, curl_off_t ulnow);
@@ -42,7 +45,7 @@ class Downloader
         std::string get_response_from_api(std::string release_id);
         std::string get_release_id(std::string instance_type, std::string instance_version);
         std::string gen_file_prefix();
-        
+        inline static std::string user_agent{"ESThrower by DisableGraphics/1.0"};
 };
 
 

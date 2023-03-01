@@ -14,21 +14,7 @@ ChangelogWidget::ChangelogWidget()
 void ChangelogWidget::download_changelog()
 {
     const std::string changelog_url = "https://raw.githubusercontent.com/endless-sky/endless-sky/master/changelog";
-    Downloader::download(changelog_url, (files_dir + "changelog.txt"), false);
-    
-    std::ifstream changelog_file("download/changelog.txt");
-    if(changelog_file.good())
-    {
-        std::string line;
-        while (std::getline(changelog_file, line))
-        {
-            changelog += line + "\n";
-        }
-    }
-    else 
-    {
-        changelog = "Unable to download changelog. Please check your internet connection.";
-    }
+    Downloader::download_buffered(changelog_url, changelog, false);
 
 }
 
