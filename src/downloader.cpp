@@ -32,7 +32,6 @@ int Downloader::xferinfo(void *p,
  
     curl_easy_getinfo(curl, CURLINFO_TOTAL_TIME_T, &curtime);
  
-    
     //Every 300 milliseconds, the progress bar will update. This is to prevent the program from crashing, since it
     //would update the progress bar too fast for my shitty laptop to process correctly.
     if((curtime - myp->lastruntime) >= MINIMAL_PROGRESS_FUNCTIONALITY_INTERVAL) 
@@ -43,6 +42,13 @@ int Downloader::xferinfo(void *p,
             if(myp->tw.window->is_active())
             {
                 myp->tw.progress_bar->set_fraction((double)dlnow / (double)dltotal);
+            }
+        }
+        else 
+        {
+            if(myp->tw.window->is_active())
+            {
+                myp->tw.progress_bar->set_fraction(0);
             }
         }
     }
