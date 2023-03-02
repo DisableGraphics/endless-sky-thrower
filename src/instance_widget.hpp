@@ -33,6 +33,7 @@ class Instance : public Gtk::VBox
     std::string type;
     bool autoupdate{false};
     bool untouched{false};
+    bool other_plugins{false};
     Gtk::Separator separator1, separator2;
     std::string version;
     Gtk::Label name_label;

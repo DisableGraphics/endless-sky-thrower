@@ -20,7 +20,8 @@ typedef struct
     Gtk::Window * window;
 } Tw;
 //Used internally for the xferinfo function
-struct myprogress {
+struct myprogress 
+{
   curl_off_t lastruntime; /* type depends on version, see above */
   CURL *curl;
   Tw tw;
@@ -45,7 +46,7 @@ class Downloader
         std::string get_response_from_api(std::string release_id);
         std::string get_release_id(std::string instance_type, std::string instance_version);
         std::string gen_file_prefix();
-        inline static std::string user_agent{"ESThrower by DisableGraphics/1.0"};
+        inline static const std::string user_agent{"ESThrower by DisableGraphics/1.0"};
 };
 
 
