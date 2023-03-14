@@ -23,9 +23,11 @@ NewInstanceDialog::NewInstanceDialog()
     instance_type_combo.set_active(0);
 
     autoupdate.set_label("Autoupdate");
+    autoupdate.set_tooltip_text("Updates the instance\nwhen ESThrower is launched");
 
     get_content_area()->pack_start(untouched);
-    untouched.set_label("Vanilla (No plugins)");
+    untouched.set_label("Vanilla");
+    untouched.set_tooltip_text("This instance will not have any plugins");
         
     buttons_box.pack_start(cancel_button);
     

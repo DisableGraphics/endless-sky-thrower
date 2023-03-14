@@ -2,15 +2,7 @@
 #include "gtkmm/checkbutton.h"
 #include <gtkmm.h>
 #include <iostream>
-//When creating an instance, this dialog will appear.
-//It will ask the user to:
-    //1. Introduce the type of instance (For now: Stable, Continuous and Custom)
-    //2. Introduce the name of the instance
-    //3. If the user chooses "Custom", it will ask for the executable of the instance
-    //4. If the user chooses "Stable", it will ask for the version of the instance
-    //5. If the user chooses "Continuous", won't ask for anything
-//Then it will create a new instance with the given information
-//The instance is another class, found in the "instance.hpp" file
+
 class NewInstanceDialog : public Gtk::Dialog
 {
   public:
