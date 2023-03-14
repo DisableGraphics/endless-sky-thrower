@@ -23,7 +23,7 @@ NewInstanceDialog::NewInstanceDialog()
     instance_type_combo.set_active(0);
 
     autoupdate.set_label("Autoupdate");
-    autoupdate.set_tooltip_text("Updates the instance\nwhen ESThrower is launched");
+    autoupdate.set_tooltip_text("Updates the instance\nwhen ESThrower is opened");
 
     get_content_area()->pack_start(untouched);
     untouched.set_label("Vanilla");
