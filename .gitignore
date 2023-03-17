@@ -8,3 +8,7 @@ build
 /download
 /build-mingw
 /compile_commands.json
+/build-mingw64
+*.tar.gz
+*.zip
+/bin

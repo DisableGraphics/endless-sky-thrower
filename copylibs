@@ -1,0 +1,12 @@
+#GOD DAMNIT WINDOWS, WHY THE FUCK DO YOU NEED HALF A TERABYTE OF DLLS
+#Also, I'm pretty sure I have copied some DLLs more than once, but I'm not gonna change this
+export pref=/usr/x86_64-w64-mingw32/bin
+export builddir=$PWD/../build-mingw64
+cp $pref/{libgcc_s_seh-1.dll,libwinpthread-1.dll,libstdc++-6.dll,libatkmm-1.6-1.dll,libcairomm-1.0-1.dll,libcurl-4.dll,libgdkmm-3.0-1.dll,libgtkmm-3.0-1.dll,libsigc-2.0-0.dll} $builddir
+cp $pref/{libgdk_pixbuf-2.0-0.dll,libatk-1.0-0.dll,libglib-2.0-0.dll,libglibmm-2.4-1.dll,libgobject-2.0-0.dll,libintl-8.dll,libatkmm-1.6-1.dll,libcairo-2.dll,libcairomm-1.0-1.dll} $builddir
+cp $pref/{libbrotlidec.dll,libcrypto-3-x64.dll,libidn2-0.dll,libnghttp2-14.dll,libpsl-5.dll,libssh2.dll,libssl-3-x64.dll,libssp-0.dll,zlib1.dll} $builddir
+cp $pref/{libiconv-2.dll,libintl-8.dll,libpcre2-8-0.dll,libglib-2.0-0.dll,libffi-8.dll,libgobject-2.0-0.dll,libgmodule-2.0-0.dll,libfontconfig-1.dll} $builddir
+cp $pref/{libfreetype-6.dll,libpixman-1-0.dll,libpng16-16.dll,libbrotlicommon.dll,libbrotlidec.dll,libunistring-5.dll,libidn2-0.dll,libexpat-1.dll,libbz2-1.dll} $builddir
+cp $pref/{libgdk-3-0.dll,libgio-2.0-0.dll,libjpeg-8.dll,libtiff-6.dll,libcairo-gobject-2.dll,libepoxy-0.dll,libfribidi-0.dll,liblzma-5.dll,libpango-1.0-0.dll} $builddir
+cp $pref/{libharfbuzz-0.dll,libthai-0.dll,libgraphite2.dll,libdatrie-1.dll,libpangocairo-1.0-0.dll,libpangowin32-1.0-0.dll,libpangoft2-1.0-0.dll,libgiomm-2.4-1.dll} $builddir
+cp $pref/{libpangomm-1.4-1.dll,libgtkmm-3.0-1.dll} $builddir
