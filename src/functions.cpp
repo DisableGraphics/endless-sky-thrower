@@ -113,7 +113,7 @@ std::string Functions::get_folder_for_filename(std::string filename)
 
 void Functions::open_folder(std::string instance_name, std::string instance_type, std::string instance_version)
 {
-    std::string path = "download/" + instance_name;
+    std::string path = global::config_dir + "download/" + instance_name;
     std::string command{""};
     std::string os = Functions::get_OS();
     if(instance_type == "Custom")
@@ -141,7 +141,7 @@ void Functions::launch_game(const std::string &instance_name, const std::string 
 	//I don't even know how to launch the game on macos in the first place.
 	if(!global::lock)
 	{
-		if(instance_type == "Custom"? std::filesystem::exists(instance_version) : std::filesystem::exists("download/" + instance_name))
+		if(instance_type == "Custom"? std::filesystem::exists(instance_version) : std::filesystem::exists(global::config_dir + "download/" + instance_name))
 		{
 			std::string es_folder;
 			std::string os = Functions::get_OS();
@@ -183,12 +183,12 @@ void Functions::launch_game(const std::string &instance_name, const std::string 
 			std::string game_command{""};
 			if(instance_type != "Custom")
 			{
-				command = "chmod +x \"download/" + instance_name + "/" + game_executable + "\"";
-				game_command = "download/" + instance_name + "/" + game_executable;
+				command = "chmod +x\"" + global::config_dir + "download/" + instance_name + "/" + game_executable + "\"";
+				game_command = global::config_dir + "download/" + instance_name + "/" + game_executable;
 			}
 			else
 			{
-				command = "chmod +x \"" + instance_version + "\"";
+				command = "chmod +x \"" + global::config_dir + "" + instance_version + "\"";
 				game_command = instance_version;
 			}
 			
@@ -202,16 +202,16 @@ void Functions::launch_game(const std::string &instance_name, const std::string 
 					execvp(game_command.c_str(), args);
 					break;
 				case -1: 
-					std::cout << "error\n";
+					std::cout << "[ERROR] Unable to fork secondary process\n";
 			}
 			#elif _WIN32
 			if(instance_type != "Custom")
 			{
 				bool run_extraction_command{false};
-				if(!std::filesystem::exists("download/" + instance_name + "/" + game_executable))
+				if(!std::filesystem::exists(global::config_dir + "download/" + instance_name + "/" + game_executable))
 				{
 					run_extraction_command = true;
-					command = "7za x \"download/" + instance_name + "/EndlessSky-win64.zip\" -o\"download/" + instance_name + "\"";
+					command = "7za x \"" + global::config_dir + "download/" + instance_name + "/EndlessSky-win64.zip\" -o\"" + global::config_dir + "download/" + instance_name + "\"";
 				}
 				if(run_extraction_command)
 				{
@@ -223,9 +223,8 @@ void Functions::launch_game(const std::string &instance_name, const std::string 
 		}
 		else 
 		{
-
 			InformationDialog warn{"Not found",
-			"The selected game installation could not be found.\nPlease redownload the game.",
+			"The selected game installation could not be found.\nPlease download the game.",
 			true};
 			warn.run();
 		}
@@ -286,4 +285,23 @@ void Functions::open_data_folder()
         command = "open " + std::string(getenv("HOME")) + "/Library/Application Support/endless-sky/";
    }
     system(command.c_str());
+}
+
+//Return the home dir
+std::string Functions::get_home_dir()
+{
+	std::string os{Functions::get_OS()};
+	if(os == "Linux")
+	{
+		return std::string(getenv("HOME"));
+	}
+	else if(os == "Windows")
+	{
+		return std::string(getenv("APPDATA"));
+	}
+	else if(os == "MacOS")
+	{
+		return std::string(getenv("HOME"));
+	}
+	return "";
 }

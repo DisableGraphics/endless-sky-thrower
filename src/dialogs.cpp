@@ -64,14 +64,22 @@ std::string NewInstanceDialog::get_naem()
 
 std::string NewInstanceDialog::get_version()
 {
-    return get_selected() != 1? version_entry.get_text() : "0";
+    return get_selected() != 1 ? version_entry.get_text() : "0";
 }
 
 std::string NewInstanceDialog::get_typee()
 {
-    return get_selected() == 0?"Stable":get_selected() == 1?"Continuous":"Custom";
+    if(get_selected() == 0)
+        return "Stable";
+    else if(get_selected() == 1)
+        return "Continuous";
+    else if(get_selected() == 2)
+        return "Custom";
+    else if(get_selected() == 3)
+        return "Custom";
+    else //Just in case
+        return "Custom";
 }
-
 void NewInstanceDialog::on_cancel_button_clicked()
 {
     close();
@@ -90,10 +98,11 @@ void NewInstanceDialog::on_browse_button_clicked()
             version_entry.set_text(dialog.get_filename());
             break;
         case Gtk::RESPONSE_CANCEL:
-            std::cout << "Cancel clicked." << std::endl;
+            std::cout << "[INFO]Cancel clicked." << std::endl;
             break;
         default:
-            std::cout << "Unexpected button clicked." << std::endl;
+            std::cout << "[ERROR] Unexpected button clicked." << std::endl;
+            std::cout << "[ERROR] Just what did you do?" << std::endl;
             break;
     }
 }

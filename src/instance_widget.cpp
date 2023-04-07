@@ -1,7 +1,7 @@
 #include "instance_widget.hpp"
 #include "downloader.hpp"
 #include "functions.hpp"
-#include "gtkmm/progressbar.h"
+#include "global_variables.hpp"
 #include "sigc++/functors/ptr_fun.h"
 
 //As much as I'd like to put this in the Intance class, I can't. For some reason, it doesn't work.
@@ -153,7 +153,7 @@ void Instance::get_rekt()
 {
     if(type != "Custom")
     {
-        std::filesystem::remove_all("download/" + get_name());
+        std::filesystem::remove_all(global::config_dir + "download/" + get_name());
     }
     else 
     {

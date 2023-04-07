@@ -8,9 +8,6 @@
 #include <curl/curl.h>
 
 #include "downloader.hpp"
-#include "gtkmm/dialog.h"
-#include "gtkmm/progressbar.h"
-#include "gtkmm/window.h"
 #include "main_window.hpp"
 #include "secondary_dialogs.hpp"
 
@@ -21,7 +18,7 @@ int main(int argc, char* argv[])
 		#ifdef __linux__
 		//Check if a file named "/tmp/esthrower.lock" exists. If it does, then the program is already running.
 		//If it doesn't, then create the file and continue.
-		if(std::filesystem::exists("/tmp/esthrower.lock"))
+		if(std::filesystem::exists(std::filesystem::temp_directory_path().string() + "/esthrower.lock"))
 		{
 			InformationDialog dialog("Error", "An instance of ESThrower is already running.\nExiting...", true);
 			dialog.run();
@@ -31,7 +28,7 @@ int main(int argc, char* argv[])
 		}
 		else
 		{
-			std::ofstream lock_file("/tmp/esthrower.lock");
+			std::ofstream lock_file(std::filesystem::temp_directory_path().string() + "/esthrower.lock");
 			lock_file.close();
 		}
 		#elif _WIN32
@@ -53,18 +50,20 @@ int main(int argc, char* argv[])
 		curl_global_init(CURL_GLOBAL_ALL);
 		
 		std::cout << "[INFO] Starting ESThrower..." << std::endl;
-		
-		
-		
-		if(!std::filesystem::exists("download"))
+
+		if(!std::filesystem::exists(global::config_dir))
 		{
-			std::filesystem::create_directory("download");
+			std::filesystem::create_directory(global::config_dir);
+		}
+		if(!std::filesystem::exists(global::config_dir + "download"))
+		{
+			std::filesystem::create_directory(global::config_dir + "download");
 		}
 		MyWindow win;
 		Downloader::download_plugin_json();
 		Gtk::ProgressBar * global_prog = win.get_progress();
 		std::cout << "Checking for instances... ";
-		if(std::filesystem::exists("download/instances.json"))
+		if(std::filesystem::exists(global::config_dir + "download/instances.json"))
 		{
 			for(auto & p : win.read_instances())
 			{
@@ -84,7 +83,7 @@ int main(int argc, char* argv[])
 	catch(const std::exception& e)
 	{
 		std::cout << e.what() << std::endl;
-		std::filesystem::remove("/tmp/esthrower.lock");
+		std::filesystem::remove(std::filesystem::temp_directory_path().string() + "/esthrower.lock");
 		InformationDialog dialog("Error", (std::string)"ESThrower crashed with the following exception: \n" + e.what(), true);
 		dialog.run();
 		return -1;

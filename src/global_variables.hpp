@@ -1,6 +1,7 @@
 #pragma once
 #include <iostream>
 #include <vector>
+#include "functions.hpp"
 
 typedef struct
 {
@@ -23,4 +24,5 @@ namespace global
 {
     inline bool lock;
     inline std::vector<Plugin_ID> plugins;
+    const std::string config_dir = Functions::get_home_dir() + "/.esthrower/";
 }

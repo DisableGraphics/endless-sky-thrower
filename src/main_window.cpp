@@ -109,7 +109,7 @@ void MyWindow::on_switch_page(Gtk::Widget * page, guint number)
 bool MyWindow::on_deleete_event(GdkEventAny* any_event)
 {
     //Delete the temporary file /tmp/esthrower.lock
-    std::remove("/tmp/esthrower.lock");
+    std::remove(std::string(std::filesystem::temp_directory_path().string() + "/esthrower.lock").c_str());
 
     save_instances();
     return false;
@@ -120,7 +120,7 @@ void MyWindow::save_instances()
 {
     if(instances.size() == 0)
     {
-        std::ofstream file("download/instances.json");
+        std::ofstream file(global::config_dir + "download/instances.json");
         file << "[]";
         file.close();
         std::cout << "[INFO] No instances to save." << std::endl;
@@ -138,7 +138,7 @@ void MyWindow::save_instances()
         });
     }
     std::ofstream file;
-    file.open("download/instances.json");
+    file.open(global::config_dir + "download/instances.json");
     file << j.dump(4);
     file.close();
 }
@@ -146,7 +146,6 @@ void MyWindow::save_instances()
 //Removes the instance from the list of instances using its name
 inline void MyWindow::remove_instance(std::string name)
 {
-    
     for (unsigned long i{0}; i < instances.size(); i++)
     {
         if(instances.at(i).get_name() == name)
@@ -163,7 +162,7 @@ inline void MyWindow::remove_instance(std::string name)
             dialog2.run();
             bool canc = dialog2.cancelled();
             
-            if(std::filesystem::exists("download/" + name) && !canc)
+            if(std::filesystem::exists(global::config_dir + "download/" + name) && !canc)
             {
                 instances.at(i).get_rekt();
             }
@@ -180,7 +179,7 @@ std::vector<Instance> MyWindow::read_instances()
 {
     std::vector<Instance> instances;
     std::ifstream file;
-    file.open("download/instances.json");
+    file.open(global::config_dir + "download/instances.json");
     if(file.is_open())
     {
         nlohmann::json j;
@@ -210,8 +209,8 @@ void MyWindow::download_pr(std::string pr_number)
         sleep(1);
     }
     global::lock = true;
-    std::string command{"git clone https://github.com/endless-sky/endless-sky.git download/" + pr_number
-    + " && cd download/" + pr_number+ " && git pr " + pr_number};
+    std::string command{"git clone https://github.com/endless-sky/endless-sky.git " + global::config_dir + "download/" + pr_number
+    + " && cd " + global::config_dir + "download/" + pr_number+ " && git pr " + pr_number};
     
     system(command.c_str());
     if(is_active())
@@ -220,7 +219,7 @@ void MyWindow::download_pr(std::string pr_number)
     }
     //Now compile it
     //Now that the Discord ppl said tha we were gonna use cmake...
-    command = "cd download/" + pr_number + " && cmake . && cmake --build .";
+    command = "cd " + global::config_dir + "download/" + pr_number + " && cmake . && cmake --build .";
     system(command.c_str());
     if(Functions::get_OS() != "Windows")
     {
@@ -252,7 +251,7 @@ void MyWindow::new_dialog()
                 //It is a custom PR. We need to download it, compile it and set the version to the path of the executable
                 std::thread t(&MyWindow::download_pr, this, dialog.get_version());
                 t.detach();
-                add_instance(dialog.get_naem(), dialog.get_typee(), "download/" + dialog.get_version() + "/endless-sky", (Gtk::Window*) this, dialog.auto_update(), dialog.vanilla());
+                add_instance(dialog.get_naem(), dialog.get_typee(), global::config_dir + "download/" + dialog.get_version() + "/endless-sky", (Gtk::Window*) this, dialog.auto_update(), dialog.vanilla());
                 
                 InformationDialog d("Download started", "The download has started. Do not close the launcher while the download and compilation lasts.", true);
                 d.show_all();

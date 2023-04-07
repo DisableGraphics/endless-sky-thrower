@@ -140,9 +140,9 @@ void PluginInstance::download_plugin()
         extract_command = "unzip -o \"";
         plugins_folder = home_folder + "/Library/Application Support/endless-sky/plugins/";
     }
-    std::cout << extract_command + "download/" + get_plugin_id().name + ".zip\"" + options + "plugins/" << std::endl;
-    system((extract_command + "download/" + get_plugin_id().name + ".zip\"" + options + "plugins/").c_str());
-    std::filesystem::remove_all("download/" + get_plugin_id().name + ".zip");
+    std::cout << extract_command + global::config_dir + "download/" + get_plugin_id().name + ".zip\"" + options + "plugins/" << std::endl;
+    system((extract_command + global::config_dir + "download/" + get_plugin_id().name + ".zip\"" + options + "plugins/").c_str());
+    std::filesystem::remove_all(global::config_dir + "download/" + get_plugin_id().name + ".zip");
     
     std::string folder = Functions::get_first_folder("plugins/");
     if(Functions::get_number_of_files_in_folder(folder) == 1)

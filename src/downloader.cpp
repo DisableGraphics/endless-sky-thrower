@@ -61,10 +61,10 @@ void Downloader::download_plugin_json()
     //Raw json url
     std::string url = "https://raw.githubusercontent.com/EndlessSkyCommunity/endless-sky-plugins/master/generated/plugins.json";
 
-    download(url, "download/plugins.json", false);
+    download(url, global::config_dir + "download/plugins.json", false);
     //Get the size of the json file to test if it was downloaded correctly. If it is 0, then the download failed. (No internet)
     std::ifstream verification;
-    verification.open("download/plugins.json");
+    verification.open(global::config_dir + "download/plugins.json");
     verification.seekg(0, std::ios::end);
     int size = verification.tellg();
     verification.close();
@@ -80,7 +80,7 @@ void Downloader::download_plugin_json()
     }
 
     nlohmann::json j;
-    std::ifstream i("download/plugins.json");
+    std::ifstream i(global::config_dir + "download/plugins.json");
     i >> j;
     std::string plugin_name;
     std::string plugin_version;
@@ -120,9 +120,9 @@ void Downloader::download_instance(Gtk::ProgressBar * progress_bar, std::string 
     {
         global::lock = true;
     }
-    if(!std::filesystem::exists("download/" + instance_name))
+    if(!std::filesystem::exists(global::config_dir + "download/" + instance_name))
     {
-        std::filesystem::create_directory("download/" + instance_name);
+        std::filesystem::create_directory(global::config_dir + "download/" + instance_name);
     }
 
     std::string url{get_url(type, instance_version)};
@@ -150,7 +150,7 @@ void Downloader::download_instance(Gtk::ProgressBar * progress_bar, std::string 
     
     std::string file_prefix = gen_file_prefix();
     //I like that I can output the file to a specific filename, so I don't have to rename it later.
-    std::string out_str = ("download/" + instance_name + "/" + file_prefix);
+    std::string out_str = (global::config_dir + "download/" + instance_name + "/" + file_prefix);
     
     download(url, out_str, false, true, progress_bar, window);
     std::ifstream verification;
@@ -220,7 +220,6 @@ std::string Downloader::get_release_id(std::string instance_type, std::string in
         }
     }
     
-    //std::filesystem::remove("download/releases.json");
     std::cout << "[INFO] Release ID: " << release_id << std::endl;
     return release_id == -1 ? "None" : std::to_string(release_id);
 }
