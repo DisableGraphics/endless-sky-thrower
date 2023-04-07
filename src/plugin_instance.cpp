@@ -4,6 +4,7 @@
 #include "global_variables.hpp"
 #include "sigc++/functors/mem_fun.h"
 #include <thread>
+#include "secondary_dialogs.hpp"
 
 void PluginInstance::set_installed(bool installed)
 {

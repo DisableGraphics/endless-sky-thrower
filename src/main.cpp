@@ -15,11 +15,11 @@ int main(int argc, char* argv[])
 {
 	try{
 		auto app = Gtk::Application::create("org.gtkmm.examples.base");
-		#ifdef __linux__
 		//Check if a file named "/tmp/esthrower.lock" exists. If it does, then the program is already running.
 		//If it doesn't, then create the file and continue.
 		if(std::filesystem::exists(std::filesystem::temp_directory_path().string() + "/esthrower.lock"))
 		{
+			//std::cout << std::filesystem::temp_directory_path().string() + "esthrower.lock" << std::endl;
 			InformationDialog dialog("Error", "An instance of ESThrower is already running.\nExiting...", true);
 			dialog.run();
 
@@ -31,22 +31,6 @@ int main(int argc, char* argv[])
 			std::ofstream lock_file(std::filesystem::temp_directory_path().string() + "/esthrower.lock");
 			lock_file.close();
 		}
-		#elif _WIN32
-		//Put a esthrower.lock file in the temp folder
-		if(std::filesystem::exists(std::filesystem::temp_directory_path().string() + "/esthrower.lock"))
-		{
-			InformationDialog dialog("Error", "An instance of ESThrower is already running.\nExiting...", true);
-			dialog.run();
-
-			std::cout << "The program is already running. Exiting..." << std::endl;
-			return -1;
-		}
-		else
-		{
-			std::ofstream lock_file(std::filesystem::temp_directory_path().string() + "/esthrower.lock");
-			lock_file.close();
-		}
-		#endif
 		curl_global_init(CURL_GLOBAL_ALL);
 		
 		std::cout << "[INFO] Starting ESThrower..." << std::endl;

@@ -5,15 +5,11 @@
 #include <sstream>
 #include <string>
 #include <vector>
-#include "dialogs.hpp"
-#include "global_variables.hpp"
 #include "gtkmm/hvbox.h"
 #include "instance_widget.hpp"
 #include "plugin_instance.hpp"
 #include "changelog_widget.hpp"
 #include "icon/esthrower.xpm"
-#include "secondary_dialogs.hpp"
-
 
 //The main window. Inherits from Gtk::Window
 class MyWindow : public Gtk::Window

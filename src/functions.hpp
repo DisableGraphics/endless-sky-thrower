@@ -14,6 +14,8 @@ class Functions
 		static std::string instance_version_minus_v(std::string instance_version);
 		static std::string get_home_dir();
 
+		static std::vector<std::string> get_files_in_folder(std::string folder, std::string extension = "");
+
 		static int get_number_of_files_in_folder(std::string folder);
 
 		static bool exists_modplugins(std::string datadir);

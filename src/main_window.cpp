@@ -1,6 +1,10 @@
 #include "main_window.hpp"
 #include "gtkmm/window.h"
 #include "nlohmann/json.hpp"
+#include "dialogs.hpp"
+#include "global_variables.hpp"
+#include "secondary_dialogs.hpp"
+
 
 //The MyWindow constructor. Puts the widgets in place and connects the signals
 MyWindow::MyWindow()

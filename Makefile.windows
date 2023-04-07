@@ -4,7 +4,7 @@ CXX=$(PREFIX)g++
 CFLAGS=-c -Wall
 #Link with Gtkmm 3.0 and libcurl
 LDFLAGS=`$(PREFIX)pkg-config --cflags --libs gtkmm-3.0 libcurl`
-SOURCES=src/main.cpp
+SOURCES=$(wildcard src/*.cpp)
 OBJECTS=$(SOURCES:.cpp=.o)
 EXECUTABLE_FOLDER=build/win32/
 EXECUTABLE=build/win32/$(shell basename $(CURDIR))

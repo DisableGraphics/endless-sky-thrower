@@ -5,8 +5,6 @@
 #include <memory>
 #include <system_error>
 #include <thread>
-#include "functions.hpp"
-#include "secondary_dialogs.hpp"
 
 class PluginInstance : public Gtk::VBox
 {

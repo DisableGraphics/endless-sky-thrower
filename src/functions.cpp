@@ -34,6 +34,19 @@ std::string Functions::get_first_folder(std::string folder)
     return first_folder;
 }
 
+std::vector<std::string> Functions::get_files_in_folder(std::string folder, std::string extension)
+{
+	std::vector<std::string> files;
+	for (const auto & entry : std::filesystem::directory_iterator(folder))
+	{
+		if(entry.path().extension().string().find(extension) != std::string::npos)
+		{
+			files.push_back(entry.path().string());
+		}
+	}
+	return files;
+}
+
 int Functions::get_number_of_files_in_folder(std::string folder)
 {
     int number_of_files = 0;
@@ -191,8 +204,9 @@ void Functions::launch_game(const std::string &instance_name, const std::string 
 				command = "chmod +x \"" + global::config_dir + "" + instance_version + "\"";
 				game_command = instance_version;
 			}
-			
+			#ifndef _WIN32
 			system(command.c_str());
+			#endif
 			#ifdef __linux__
 			char *const  args[] = {(char *)game_command.c_str()};
 			pid_t pid = fork();
@@ -211,7 +225,9 @@ void Functions::launch_game(const std::string &instance_name, const std::string 
 				if(!std::filesystem::exists(global::config_dir + "download/" + instance_name + "/" + game_executable))
 				{
 					run_extraction_command = true;
-					command = "7za x \"" + global::config_dir + "download/" + instance_name + "/EndlessSky-win64.zip\" -o\"" + global::config_dir + "download/" + instance_name + "\"";
+					auto zipfile = get_files_in_folder(global::config_dir + "download/" + instance_name, "zip")[0];
+					std::cout << zipfile << std::endl;
+					command = "7za x \"" + zipfile + "\" -y -o\"" + global::config_dir + "download/" + instance_name + "\"";
 				}
 				if(run_extraction_command)
 				{

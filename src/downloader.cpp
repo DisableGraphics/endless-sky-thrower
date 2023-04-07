@@ -161,12 +161,12 @@ void Downloader::download_instance(Gtk::ProgressBar * progress_bar, std::string 
     
     //Dialog to notify the user that the download is complete
     //This dialog bugs on windows, so I'm disabling it for now
-    //#ifndef _WIN32
+    #ifndef _WIN32
     InformationDialog * dialog = new InformationDialog("Download Complete", "The instance has been downloaded correctly. You can now launch the game.");
     dialog->set_transient_for(*window);
     dialog->show_all();
     dialog->run();
-    //#endif
+    #endif
 
     global::lock = false;
 
