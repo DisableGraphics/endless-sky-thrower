@@ -162,17 +162,12 @@ void Functions::launch_game(const std::string &instance_name, const std::string 
 			if(os == "Linux")
 			{
 				es_folder = std::getenv("HOME") + std::string("/.local/share/endless-sky");
-				game_executable = "endless-sky.AppImage";
+				game_executable = "";
 			}
 			else if(os == "Windows")
 			{
 				es_folder = std::getenv("APPDATA") + std::string("/endless-sky");
 				game_executable = "EndlessSky.exe";
-			}
-			else if(os == "MacOS")
-			{
-				es_folder = std::getenv("HOME") + std::string("/Library/Application Support/endless-sky");
-				game_executable = "EndlessSky";
 			}
 			bool plugins_exists{std::filesystem::exists(es_folder + "/plugins")};
 			bool _plugins_exists{std::filesystem::exists(es_folder + "/_plugins")};
@@ -201,7 +196,7 @@ void Functions::launch_game(const std::string &instance_name, const std::string 
 			}
 			else
 			{
-				command = "chmod +x \"" + global::config_dir + "" + instance_version + "\"";
+				command = "chmod +x \"" + instance_version + "\"";
 				game_command = instance_version;
 			}
 			#ifndef _WIN32
@@ -233,7 +228,13 @@ void Functions::launch_game(const std::string &instance_name, const std::string 
 				{
 					system(command.c_str());
 				}
+				game_executable = get_files_in_folder(global::config_dir + "download/" + instance_name, "exe")[0];
 			}
+			else
+			{
+				game_executable = get_files_in_folder(instance_version, "exe")[0];
+			}
+			game_command += game_executable;
 			system(game_command.c_str());
 			#endif
 		}
