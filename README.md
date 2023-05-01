@@ -28,8 +28,7 @@ cd endless-sky-thrower
 meson setup builddir
 meson compile -C builddir
 ```
-# Support
-This application downloads and installs endless sky instances for you. Moreover, you can add custom instances that are already downloaded on your disk (For example: a PR, a content update...).
+
 # Wanted:
 Someone who can help me port this to macOS
 
