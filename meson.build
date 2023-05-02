@@ -8,8 +8,6 @@ if host_machine.system() == 'windows'
     install_dir = 'C:/Program Files/ESThrower'
 elif host_machine.system() == 'linux'
     install_dir = '/usr/bin'
-elif host_machine.system() == 'darwin'
-    install_dir = '/usr/bin'
 else #Generic UNIX
     install_dir = '/usr/bin'
 endif
