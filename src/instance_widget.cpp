@@ -2,6 +2,8 @@
 #include "downloader.hpp"
 #include "functions.hpp"
 #include "global_variables.hpp"
+#include "gtkmm/box.h"
+#include "gtkmm/enums.h"
 #include "sigc++/functors/ptr_fun.h"
 
 //As much as I'd like to put this in the Intance class, I can't. For some reason, it doesn't work.
@@ -56,6 +58,7 @@ Instance::Instance(std::string name, std::string _type, std::string _version, Gt
     labels_box.pack_start(name_label);
     labels_box.set_halign(Gtk::ALIGN_START);
     labels_box.set_spacing(10);
+    labels_box.pack_end(button_box);
     if(type == "Continuous")
     {
         version_label.set_label("Continuous");
@@ -79,7 +82,7 @@ Instance::Instance(std::string name, std::string _type, std::string _version, Gt
         labels_box.pack_end(untouched_label);
     }
 
-    labels_box.pack_start(folder);
+    button_box.pack_end(folder);
     folder.set_image_from_icon_name("folder-symbolic");
     folder.signal_clicked().connect(sigc::bind<std::string>(sigc::ptr_fun(Functions::open_folder), get_name(), get_typee(), get_version()));
     folder.set_tooltip_text("Open instance folder");
@@ -90,14 +93,18 @@ Instance::Instance(std::string name, std::string _type, std::string _version, Gt
     update.set_image_from_icon_name("go-down");
     
     update.set_tooltip_text("Update instance");
-    labels_box.pack_start(launch);
+    button_box.pack_end(launch);
     launch.set_image_from_icon_name("media-playback-start");
     launch.signal_clicked().connect(sigc::bind<std::string>(sigc::ptr_fun(Functions::launch_game), get_name(), type, version, untouched));
     launch.set_tooltip_text("Launch the game");
     if(!get_untouched())
     {
-        labels_box.pack_start(run_without_plugins);
+        button_box.pack_end(run_without_plugins);
     }
+    button_box.set_halign(Gtk::ALIGN_END);
+    button_box.set_spacing(10);
+    button_box.set_hexpand(false);
+    button_box.set_valign(Gtk::ALIGN_CENTER);
     run_without_plugins.set_image_from_icon_name("video-display-symbolic");
     run_without_plugins.signal_clicked().connect(sigc::bind<std::string>(sigc::ptr_fun(Functions::launch_game), get_name(), type, version, true));
     //Put a small label when hovering over the button
@@ -144,9 +151,9 @@ std::string Instance::get_typee()
     return type;
 }
 
-Gtk::HBox * Instance::get_labels_box()
+Gtk::HBox * Instance::get_button_box()
 {
-    return &labels_box;
+    return &button_box;
 }
 
 void Instance::get_rekt()

@@ -62,10 +62,10 @@ void MyWindow::add_instance(std::string name, std::string type, std::string vers
     instances.push_back(Instance(name, type, version, &progress, win, autoupdate, untouched));
     instances.back().set_autoupdate(autoupdate);
     instances.back().set_untouched(untouched);
-    auto * tmp = instances[instances.size() - 1].get_labels_box();
+    auto * tmp = instances[instances.size() - 1].get_button_box();
 
     instance_buttons.push_back(Gtk::Button());
-    tmp->pack_start(instance_buttons[instance_buttons.size()-1]);
+    tmp->pack_end(instance_buttons[instance_buttons.size()-1]);
     instance_buttons[instance_buttons.size() - 1].set_image_from_icon_name("user-trash-symbolic");
     instance_buttons[instance_buttons.size() - 1].signal_clicked().connect(sigc::bind(sigc::mem_fun(*this, &MyWindow::remove_instance), instances[instances.size()-1].get_name()));
     instance_buttons[instance_buttons.size() - 1].set_tooltip_text("Delete instance");
