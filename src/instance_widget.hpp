@@ -1,4 +1,5 @@
 #pragma once
+#include "gtkmm/hvbox.h"
 #include <filesystem>
 #include <gtkmm.h>
 #include <iostream>
@@ -21,7 +22,7 @@ class Instance : public Gtk::VBox
 		//Returns the type
 		std::string get_typee();
 		//Returns the main box
-		Gtk::HBox * get_labels_box();
+		Gtk::HBox * get_button_box();
 
 		void set_untouched(bool untouched);
 		void set_autoupdate(bool autoupdate);
@@ -45,6 +46,7 @@ class Instance : public Gtk::VBox
 		Gtk::Button run_without_plugins;
 		Gtk::Label untouched_label;
 		Gtk::HBox labels_box;
+		Gtk::HBox button_box;
     
     
     
