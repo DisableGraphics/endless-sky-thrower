@@ -13,8 +13,12 @@ ChangelogWidget::ChangelogWidget()
 
 void ChangelogWidget::download_changelog()
 {
-    const std::string changelog_url = "https://raw.githubusercontent.com/endless-sky/endless-sky/master/changelog";
-    Downloader::download_buffered(changelog_url, changelog, false);
+    bool connected = Downloader::ping();
+    if(connected)
+    {
+        const std::string changelog_url = "https://raw.githubusercontent.com/endless-sky/endless-sky/master/changelog";
+        Downloader::download_buffered(changelog_url, changelog, false);
+    }
 
 }
 

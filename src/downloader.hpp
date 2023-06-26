@@ -39,6 +39,7 @@ class Downloader
         static void download(const std::string &url, std::string file_name, bool custom_user_agent, bool xferinfo_callback = false, Gtk::ProgressBar * progress_bar = nullptr, Gtk::Window * win = nullptr);
         
         static void download_buffered(const std::string &url, std::string &buffer, bool custom_user_agent);
+        static bool ping();
         
     private:
         static int xferinfo(void *p, curl_off_t dltotal, curl_off_t dlnow, curl_off_t ultotal, curl_off_t ulnow);

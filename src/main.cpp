@@ -44,15 +44,21 @@ int main(int argc, char* argv[])
 			std::filesystem::create_directory(global::config_dir + "download");
 		}
 		MyWindow win;
-		Downloader::download_plugin_json();
+		
 		Gtk::ProgressBar * global_prog = win.get_progress();
-		std::cout << "Checking for instances... ";
+		bool connected_to_internet = Downloader::ping();
+		if (connected_to_internet)
+		{
+			std::cout << "[INFO] Connected to the internet!\n";
+			Downloader::download_plugin_json();
+		}
+		std::cout << "[INFO] Checking for instances... ";
 		if(std::filesystem::exists(global::config_dir + "download/instances.json"))
 		{
 			for(auto & p : win.read_instances())
 			{
 				win.add_instance(p.get_name(), p.get_typee(), p.get_version(), (Gtk::Window*) &win, p.get_autoupdate(), p.get_untouched());
-				if(p.get_autoupdate() == true)
+				if(p.get_autoupdate() == true && connected_to_internet)
 				{
 					p.download();
 				}

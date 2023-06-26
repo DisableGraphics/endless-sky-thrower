@@ -21,6 +21,37 @@ size_t Downloader::write_data(void *ptr, size_t size, size_t nmemb, FILE *stream
     return written;
 }
 
+//Checks if we are connected to the internet
+bool Downloader::ping()
+{
+    CURL *curl;
+    CURLcode res;
+    curl = curl_easy_init();
+    if(curl) 
+    {
+        curl_easy_setopt(curl, CURLOPT_URL, "https://www.google.com");
+        curl_easy_setopt(curl, CURLOPT_NOBODY, 1L);
+        res = curl_easy_perform(curl);
+        if(res == CURLE_OK)
+        {
+            long response_code;
+            curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &response_code);
+            if(response_code == 200)
+            {
+                curl_easy_cleanup(curl);
+                return true;
+            }
+        }
+        else
+        {
+            curl_easy_cleanup(curl);
+            return false;
+        }
+        curl_easy_cleanup(curl);
+    }
+    return false;
+}
+
 //This function is used to update the progress bar. Will set the progress bar to a fraction of the download progress.
 int Downloader::xferinfo(void *p,
                     curl_off_t dltotal, curl_off_t dlnow,
@@ -189,13 +220,18 @@ std::string Downloader::get_release_id(std::string instance_type, std::string in
     std::string response{""};
     download_buffered(url, response, true);
     
-    //Parse the json file
-    nlohmann::json j = nlohmann::json::parse(response);
+    
     int release_id{-1};
     if(response.find("API rate limit exceeded") != std::string::npos)
     {
         return "Rate Limited";
     }
+    else if(response == "None")
+    {
+        return "None";
+    }
+    //Parse the json file
+    nlohmann::json j = nlohmann::json::parse(response);
     try
     {
         for(auto& element : j)
@@ -381,6 +417,10 @@ void Downloader::download_buffered(const std::string &url, std::string &buffer, 
         if(res != CURLE_OK)
         {
             std::cout << "[ERROR] " << curl_easy_strerror(res) << std::endl;
+        }
+        if(res == CURLE_OPERATION_TIMEDOUT || res == CURLE_COULDNT_RESOLVE_HOST)
+        {
+            buffer = "None";
         }
         curl_easy_cleanup(curl);
     }
