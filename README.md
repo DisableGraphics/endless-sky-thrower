@@ -19,7 +19,7 @@ The name is a joke, since it's, you know, a _launcher_
 # Compilation
 Install the dependencies: 
 - Arch: ```yay -S curl gtkmm3 git-extras meson libarchive cmake```
-- Ubuntu/Debian: ```sudo apt install libgkmm-3.0-dev curl git-extras meson libarchive-dev cmake```
+- Ubuntu/Debian: ```sudo apt install libgtkmm-3.0-dev curl git-extras meson libarchive-dev cmake```
 
 Then, just run: 
 ```
