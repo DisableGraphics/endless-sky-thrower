@@ -13,7 +13,8 @@
 
 int main(int argc, char* argv[])
 {
-	try{
+	try
+	{
 		auto app = Gtk::Application::create("org.gtkmm.examples.base");
 		//Check if a file named "/tmp/esthrower.lock" exists. If it does, then the program is already running.
 		//If it doesn't, then create the file and continue.
