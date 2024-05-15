@@ -10,8 +10,6 @@
 #include <nlohmann/json.hpp>
 #include <fstream>
 
-//Every 300 milliseconds, the progress bar will be updated. The progress bar would crash if done with less interval time
-//on my third gen Intel shitty laptop
 #define MINIMAL_PROGRESS_FUNCTIONALITY_INTERVAL 300000
 
 typedef struct
